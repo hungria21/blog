@@ -1,0 +1,83 @@
+// =============================================================================
+// Base
+// =============================================================================
+
+@import url('https://fonts.googleapis.com/css2?family=Geist+Sans:wght@400;500;600;700&family=Fira+Code&display=swap');
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: $base-font-family;
+  font-size: $base-font-size;
+  line-height: 1.6;
+  color: $primary-text-color;
+  background-color: $dark-bg;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: $accent-color;
+  text-decoration: none;
+  @include transition(color);
+
+  &:hover {
+    color: $accent-color-hover;
+    text-decoration: underline;
+  }
+}
+
+h1, h2, h3, h4 {
+  font-weight: 600;
+  margin: 0 0 ($base-spacing / 2);
+}
+
+h1 { font-size: $h1-font-size; }
+h2 { font-size: $h2-font-size; }
+h3 { font-size: $h3-font-size; }
+h4 { font-size: $h4-font-size; }
+
+p {
+  margin: 0 0 $base-spacing;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+ul, ol {
+  margin: 0 0 $base-spacing;
+  padding-left: $base-spacing;
+}
+
+blockquote {
+  border-left: 4px solid $accent-color;
+  padding-left: $base-spacing;
+  margin: 0 0 $base-spacing;
+  color: $secondary-text-color;
+  font-style: italic;
+}
+
+code, pre {
+  font-family: $code-font-family;
+}
+
+pre {
+  padding: $base-spacing;
+  background-color: $light-dark-bg;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 $base-spacing;
+}
