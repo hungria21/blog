@@ -1,0 +1,428 @@
+# _config.yml
+title: "Meu Blog Tech"
+description: "Blog sobre desenvolvimento e tecnologia"
+url: "https://hungria21.github.io"
+baseurl: "/blog"
+
+markdown: kramdown
+highlighter: rouge
+permalink: /:year/:month/:day/:title/
+
+collections:
+  guias:
+    output: true
+    permalink: /guias/:name/
+
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+
+sass:
+  style: compressed
+
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+  - scope:
+      path: ""
+      type: "guias"
+    values:
+      layout: "post"
+
+---
+<!-- _layouts/default.html -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if page.title %}{{ page.title }} - {% endif %}{{ site.title }}</title>
+    <meta name="description" content="{{ page.description | default: site.description }}">
+    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+    <header class="header">
+        <button class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <h1 class="site-title">{{ site.title }}</h1>
+    </header>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Guias Rápidos</h3>
+        </div>
+        <ul class="sidebar-nav">
+            {% for guia in site.guias %}
+            <li><a href="{{ guia.url | relative_url }}">{{ guia.title }}</a></li>
+            {% endfor %}
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        {{ content }}
+    </main>
+
+    <div class="overlay" id="overlay"></div>
+
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        });
+
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+    </script>
+</body>
+</html>
+
+---
+<!-- _layouts/post.html -->
+---
+layout: default
+---
+
+<article class="post">
+    <header class="post-header">
+        <h1 class="post-title">{{ page.title }}</h1>
+        <div class="post-meta">
+            <time class="post-date">{{ page.date | date: "%d/%m/%Y" }}</time>
+            {% if page.author %}
+            <span class="post-author">por {{ page.author }}</span>
+            {% endif %}
+        </div>
+    </header>
+
+    <div class="post-content">
+        {{ content }}
+    </div>
+</article>
+
+---
+<!-- index.html -->
+---
+layout: default
+---
+
+<div class="home">
+    <h2 class="posts-title">Posts Recentes</h2>
+    
+    <div class="posts-grid">
+        {% for post in site.posts %}
+        <article class="post-card">
+            <h3 class="post-card-title">
+                <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+            </h3>
+            <div class="post-card-meta">
+                <time class="post-card-date">{{ post.date | date: "%d/%m/%Y" }}</time>
+            </div>
+            <div class="post-card-excerpt">
+                {{ post.excerpt | strip_html | truncate: 150 }}
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</div>
+
+---
+<!-- assets/css/style.scss -->
+---
+---
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #121212;
+    color: #ffffff;
+    line-height: 1.6;
+}
+
+.header {
+    background-color: #1a1a1a;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.menu-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    margin-right: 1rem;
+    padding: 0.5rem;
+}
+
+.menu-toggle span {
+    width: 25px;
+    height: 3px;
+    background-color: #ffffff;
+    margin: 3px 0;
+    transition: 0.3s;
+}
+
+.site-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #00d4aa;
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 300px;
+    height: 100vh;
+    background-color: #1a1a1a;
+    transition: left 0.3s ease;
+    z-index: 1001;
+    border-right: 1px solid #2a2a2a;
+    padding-top: 5rem;
+}
+
+.sidebar.active {
+    left: 0;
+}
+
+.sidebar-header {
+    padding: 1rem 2rem;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.sidebar-header h3 {
+    color: #00d4aa;
+    font-size: 1.2rem;
+}
+
+.sidebar-nav {
+    list-style: none;
+}
+
+.sidebar-nav li {
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.sidebar-nav a {
+    display: block;
+    padding: 1rem 2rem;
+    color: #ffffff;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar-nav a:hover {
+    background-color: #2a2a2a;
+    color: #00d4aa;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 999;
+}
+
+.overlay.active {
+    display: block;
+}
+
+.main-content {
+    margin-top: 5rem;
+    padding: 2rem;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.home {
+    padding: 1rem 0;
+}
+
+.posts-title {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: #00d4aa;
+}
+
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.post-card {
+    background-color: #1a1a1a;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid #2a2a2a;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 212, 170, 0.1);
+}
+
+.post-card-title {
+    margin-bottom: 0.5rem;
+}
+
+.post-card-title a {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.post-card-title a:hover {
+    color: #00d4aa;
+}
+
+.post-card-meta {
+    margin-bottom: 1rem;
+}
+
+.post-card-date {
+    color: #8e8e93;
+    font-size: 0.9rem;
+}
+
+.post-card-excerpt {
+    color: #cccccc;
+    line-height: 1.5;
+}
+
+.post {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.post-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.post-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #00d4aa;
+}
+
+.post-meta {
+    color: #8e8e93;
+    font-size: 0.9rem;
+}
+
+.post-author {
+    margin-left: 1rem;
+}
+
+.post-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+.post-content h1,
+.post-content h2,
+.post-content h3,
+.post-content h4,
+.post-content h5,
+.post-content h6 {
+    color: #00d4aa;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.post-content p {
+    margin-bottom: 1.5rem;
+}
+
+.post-content ul,
+.post-content ol {
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+}
+
+.post-content li {
+    margin-bottom: 0.5rem;
+}
+
+.post-content code {
+    background-color: #2a2a2a;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+}
+
+.post-content pre {
+    background-color: #1a1a1a;
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+    border: 1px solid #2a2a2a;
+}
+
+.post-content pre code {
+    background: none;
+    padding: 0;
+}
+
+.post-content blockquote {
+    border-left: 4px solid #00d4aa;
+    padding-left: 1rem;
+    margin: 1.5rem 0;
+    color: #cccccc;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .header {
+        padding: 1rem;
+    }
+    
+    .main-content {
+        padding: 1rem;
+    }
+    
+    .posts-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .post-title {
+        font-size: 2rem;
+    }
+    
+    .sidebar {
+        width: 280px;
+        left: -280px;
+    }
+}
