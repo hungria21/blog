@@ -1,0 +1,18 @@
+{
+    "format_version": 2,
+    "header": {
+        "description": "Diving Mask Behavior Pack",
+        "name": "Diving Mask BP",
+        "uuid": "24bf268d-9680-44c6-9e48-3bef01c97296",
+        "version": [1, 0, 0],
+        "min_engine_version": [ 1, 16, 0 ]
+    },
+    "modules": [
+        {
+            "description": "Diving Mask Behaviors",
+            "type": "data",
+            "uuid": "11c1f9ec-c0a8-4e58-9e18-1344f98e4909",
+            "version": [1, 0, 0]
+        }
+    ]
+}

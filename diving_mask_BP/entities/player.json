@@ -1,0 +1,94 @@
+{
+  "format_version": "1.16.0",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "minecraft:player",
+      "is_spawnable": false,
+      "is_summonable": false,
+      "is_experimental": false
+    },
+    "component_groups": {
+      "custom:water_breathing": {
+        "minecraft:add_mob_effect": {
+          "effect": "water_breathing",
+          "duration": 420,
+          "amplifier": 0,
+          "visible": true
+        }
+      }
+    },
+    "components": {
+      "minecraft:breathable": {
+        "total_supply": 15,
+        "suffocate_time": -1,
+        "breathes_air": true,
+        "breathes_water": false
+      },
+      "minecraft:tick_world": {
+        "interval": 20,
+        "distance_to_players": 1,
+        "target": "self",
+        "event": "custom:check_water"
+      }
+    },
+    "events": {
+      "minecraft:entity_spawned": {
+        "add": {
+          "component_groups": []
+        }
+      },
+      "custom:check_water": {
+        "sequence": [
+          {
+            "filters": {
+              "all_of": [
+                {
+                  "test": "is_underwater",
+                  "subject": "self",
+                  "operator": "==",
+                  "value": true
+                },
+                {
+                  "test": "has_equipment",
+                  "subject": "self",
+                  "domain": "head",
+                  "operator": "==",
+                  "value": "custom:diving_mask"
+                }
+              ]
+            },
+            "add": {
+              "component_groups": [
+                "custom:water_breathing"
+              ]
+            }
+          },
+          {
+            "filters": {
+              "any_of": [
+                {
+                  "test": "is_underwater",
+                  "subject": "self",
+                  "operator": "==",
+                  "value": false
+                },
+                {
+                  "test": "has_equipment",
+                  "subject": "self",
+                  "domain": "head",
+                  "operator": "!=",
+                  "value": "custom:diving_mask"
+                }
+              ]
+            },
+            "remove": {
+              "component_groups": [
+                "custom:water_breathing"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}
