@@ -1,24 +1,6 @@
-# Análise e Planejamento: Sistema Flexível de Legendas Sequenciais
+# Análise e Planejamento: Sistema Flexível de Legendas Sequen
 
-## 📋 Formato Atualmente Reconhecido
-
-Analisando o código atual, o bot reconhece **apenas um formato**:
-
-### Formato Existente:
-```
-Padrão: <Prefixo opcional> <Número>
-Regex: r'^(.*?)(\s*)(\d+)$'
-Exemplos aceitos:
-- "Ep 01" → Prefixo: "Ep " | Contador: 1 | Padding: 2
-- "01" → Prefixo: "" | Contador: 1 | Padding: 2
-- "Episódio 001" → Prefixo: "Episódio " | Contador: 1 | Padding: 3
-```
-
-**Limitação atual:** O número DEVE estar no final da string.
-
----
-
-## 🎯 Proposta de Novos Formatos para Maior Flexibilidade
+## planejamento de Novos Formatos para Maior Flexibilidade
 
 ### **Categoria 1: Animes**
 ```
