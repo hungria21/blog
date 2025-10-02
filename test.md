@@ -452,6 +452,22 @@ if __name__ == '__main__':
         logging.critical(f"A critical error occurred: {e}")
 ```
 
+# Arquivo config.py 
+
+o bot Já tem o arquivo config.py, então só corrija o código. 
+
+```
+# config.py
+
+# Para obter seu API ID e API HASH, visite my.telegram.org
+# É crucial manter esses valores em segredo.
+API_ID = 12345678  # Substitua pelo seu API ID
+API_HASH = '0123456789abcdef0123456789abcdef'  # Substitua pelo seu API HASH
+
+# O token do bot é fornecido pelo @BotFather no Telegram.
+BOT_TOKEN = 'YOUR_BOT_TOKEN'  # Substitua pelo seu BOT TOKEN
+```
+
 ## ✅ Benefícios da Abordagem Proposta
 
 - ✨ **Flexibilidade máxima** sem aumentar complexidade para o usuário
