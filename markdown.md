@@ -26,7 +26,7 @@
 
 ### Prompt para correção:
 
-No bot fornecido, a função `parse_caption_format()` está separando incorretamente o prefixo com espaços.
+No código fornecido, a função `parse_caption_format()` está separando incorretamente o prefixo com espaços.
 
 Quando o usuário envia '/legenda S01E01', o bot deve capturar:
 - prefix: 'S01E'
