@@ -1,16 +1,16 @@
 Solução 1: Usar Marcadores de Posição
 
 /legenda {n} - Título da Série
-# ↑ Contador no início
+ ↑ Contador no início
 
 /legenda EP{n} - Título
-# ↑ Contador no meio  
+ ↑ Contador no meio  
 
 /legenda Título da Série - Parte {n}
-# ↑ Contador no final
+ ↑ Contador no final
 
 /legenda EP{n:02d} - Título
-# ↑ Com formatação específica
+ ↑ Com formatação específica
 
 
 Exemplos de uso 
