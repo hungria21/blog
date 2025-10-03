@@ -38,3 +38,9 @@ Mas atualmente o código está capturando apenas 'S' como prefix e adicionando u
 O primeiro padrão regex da lista `PATTERNS` precisa ser corrigido para capturar corretamente 'S01E' como prefixo completo em formatos como S01E01, S02E15, T01E03, etc.
 
 Além disso, a lógica que adiciona espaço extra ao prefixo (a linha `prefix += " "`) deve ser removida ou corrigida, pois está causando separação indesejada nos formatos que já estão corretos.
+
+Resumindo, corrija o erro do prefixo e deixe mais flexível caso o usuário queira usar com ou sem espaço e pra isso basta ele enviar como desejar. 
+
+Exemplo: 
+- /legenda S01E01
+- /legenda S 01E01
