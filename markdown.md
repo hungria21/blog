@@ -23,6 +23,12 @@
 | /legenda {n:03d} - Série | 001 - Série, 002 - Série... |
 | /legenda EP{n} - Parte | EP01 - Parte, EP02 - Parte... |
 
+### Parâmetro start:
+O parâmetro start: especifica o número inicial da contagem sequencial quando usando o comando /legenda. Ele permite que você comece a numeração a partir de um valor específico em vez de sempre iniciar do 1.
+
+Exemplo:
+/legenda EP{n:02d} start:10 → A sequência começará em EP10, depois EP11, EP12, e assim por diante.
+
 
 ### Prompt para correção:
 
