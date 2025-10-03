@@ -1,4 +1,4 @@
-Solução 1: Usar Marcadores de Posição
+## Solução 1: Usar Marcadores de Posição
 
 /legenda {n} - Título da Série
  ↑ Contador no início
