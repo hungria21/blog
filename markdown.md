@@ -13,7 +13,7 @@
  ↑ Com formatação específica
 
 
-### Exemplos de uso 
+### Exemplos de uso: 
 
 | Comando | Resultado (Sequência) |
 |---------|----------------------|
