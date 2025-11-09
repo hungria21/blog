@@ -1,0 +1,18 @@
+{
+    "format_version": 2,
+    "header": {
+        "description": "Adiciona uma máscara de respiração aquática. (BP)",
+        "name": "Máscara de Respiração BP",
+        "uuid": "020a6f3c-0f1e-4275-a976-f85d8eac7c9c",
+        "version": [1, 0, 0],
+        "min_engine_version": [1, 16, 0]
+    },
+    "modules": [
+        {
+            "description": "Comportamentos da máscara de respiração.",
+            "type": "data",
+            "uuid": "ff606459-48c9-447f-a31c-686b8c6bfd02",
+            "version": [1, 0, 0]
+        }
+    ]
+}

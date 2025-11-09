@@ -1,0 +1,18 @@
+{
+    "format_version": 2,
+    "header": {
+        "description": "Adiciona texturas e nomes para a máscara de respiração aquática. (RP)",
+        "name": "Máscara de Respiração RP",
+        "uuid": "2cdd2018-f716-4cfb-9438-5059206309ba",
+        "version": [1, 0, 0],
+        "min_engine_version": [1, 16, 0]
+    },
+    "modules": [
+        {
+            "description": "Recursos da máscara de respiração.",
+            "type": "resources",
+            "uuid": "9b98fe28-0267-46a2-9ded-f144723938a9",
+            "version": [1, 0, 0]
+        }
+    ]
+}
