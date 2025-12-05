@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Nyaa Search Saver (PT-BR)
+// @name         Nyaa Search and Save (PT-BR)
 // @namespace    http://tampermonkey.net/
-// @version      0.4
-// @description  Pesquisa no nyaa.si, salva resultados 1080p em português em um arquivo .txt.
+// @version      0.5
+// @description  Inicia uma nova busca no nyaa.si e salva os resultados 1080p em português em um .txt.
 // @match        https://nyaa.si/*
 // @grant        none
 // ==/UserScript==
@@ -12,11 +12,12 @@
 
     const IS_SCRAPING_KEY = 'nyaa_is_scraping';
     const RESULTS_KEY = 'nyaa_results';
+    const SEARCH_TERM_KEY = 'nyaa_search_term';
 
     function addButton() {
         const formContainer = document.querySelector('form.search-form');
         const saveButton = document.createElement('button');
-        saveButton.innerHTML = 'Salvar Resultados 1080p (PT-BR)';
+        saveButton.innerHTML = 'Buscar e Salvar 1080p (PT-BR)';
         saveButton.className = 'btn btn-primary';
         saveButton.style.marginLeft = '10px';
         saveButton.addEventListener('click', startSearchAndSave);
@@ -34,10 +35,19 @@
     }
 
     function startSearchAndSave() {
-        if (confirm('Isso irá navegar por todas as páginas de resultados para coletar os dados. Deseja continuar?')) {
+        const searchTerm = prompt('Digite o termo para buscar e salvar:', '');
+        if (searchTerm === null || searchTerm.trim() === '') {
+            return; // Sai se o usuário cancelar ou não digitar nada
+        }
+
+        if (confirm(`Isso iniciará uma nova busca por "${searchTerm}" e irá navegar por todas as páginas de resultados para coletar os dados. Deseja continuar?`)) {
             sessionStorage.setItem(IS_SCRAPING_KEY, 'true');
             sessionStorage.setItem(RESULTS_KEY, JSON.stringify([]));
-            scrapeCurrentPageAndContinue();
+            sessionStorage.setItem(SEARCH_TERM_KEY, searchTerm);
+
+            // Navega para a primeira página dos resultados da nova busca
+            const searchUrl = `https://nyaa.si/?f=0&c=0_0&q=${encodeURIComponent(searchTerm)}`;
+            window.location.href = searchUrl;
         }
     }
 
@@ -71,12 +81,15 @@
         const nextButton = document.querySelector('.pagination li.next a');
         if (nextButton) {
             console.log('Navegando para a próxima página...');
-            window.location.href = nextButton.href;
+            setTimeout(() => {
+                window.location.href = nextButton.href;
+            }, 500); // Atraso de 500ms para tornar a navegação visível
         } else {
             console.log('Extração concluída.');
             saveResultsToFile();
             sessionStorage.removeItem(IS_SCRAPING_KEY);
             sessionStorage.removeItem(RESULTS_KEY);
+            sessionStorage.removeItem(SEARCH_TERM_KEY);
         }
     }
 
@@ -97,7 +110,7 @@
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
 
-        const searchTerm = document.querySelector('input[name="q"]').value || 'nyaa';
+        const searchTerm = sessionStorage.getItem(SEARCH_TERM_KEY) || 'nyaa';
         const fileName = `${searchTerm.replace(/[^a-z0-9]/gi, '_')}_1080p_ptbr.txt`;
         link.download = fileName;
 
