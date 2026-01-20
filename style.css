@@ -1,0 +1,10 @@
+body {
+    margin: 0;
+    overflow: hidden; /* Oculta as barras de rolagem */
+}
+
+#canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+}
