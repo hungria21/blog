@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personagem 3D com Three.js</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Visualizador de Sticker SVG</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        img {
+            width: 256px;
+            height: 256px;
+        }
+    </style>
 </head>
 <body>
-    <canvas id="canvas"></canvas>
-    <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
-    </script>
-    <script type="module" src="script.js"></script>
+    <img src="sticker.svg" alt="Sticker Animado">
 </body>
 </html>

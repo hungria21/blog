@@ -1,0 +1,52 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <style>
+            @keyframes piscar {
+                0%, 80%, 100% {
+                    /* Olho aberto */
+                    opacity: 1;
+                }
+                90% {
+                    /* Olho fechado */
+                    opacity: 0;
+                }
+            }
+
+            @keyframes piscar-tracejado {
+                0%, 80%, 100% {
+                    /* Olho aberto (tracejado invisível) */
+                    opacity: 0;
+                }
+                90% {
+                    /* Olho fechado (tracejado visível) */
+                    opacity: 1;
+                }
+            }
+
+            .olho-aberto {
+                animation: piscar 2s infinite;
+            }
+
+            .olho-piscando {
+                animation: piscar-tracejado 2s infinite;
+            }
+        </style>
+    </defs>
+
+    <!-- Rosto -->
+    <circle cx="256" cy="256" r="240" fill="#FFD700" stroke="#000" stroke-width="8"/>
+
+    <!-- Olho Esquerdo (aberto) -->
+    <circle cx="160" cy="200" r="30" fill="#000"/>
+
+    <!-- Olho Direito (será animado) -->
+    <g id="olho-direito">
+        <!-- Olho aberto -->
+        <circle class="olho-aberto" cx="352" cy="200" r="30" fill="#000"/>
+        <!-- Olho piscando (inicialmente oculto) -->
+        <path class="olho-piscando" d="M 322,200 A 30,15 0 0,1 382,200" stroke="#000" stroke-width="8" fill="none" opacity="0"/>
+    </g>
+
+    <!-- Boca -->
+    <path d="M 176,320 A 80,80 0 0,0 336,320" stroke="#000" stroke-width="8" fill="none"/>
+</svg>
