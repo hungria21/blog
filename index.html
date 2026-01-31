@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Snake 3D - Android Edition</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+
+        <div id="ui-layer">
+            <div id="score-container">Pontuação: <span id="score">0</span></div>
+
+            <div id="controls">
+                <div class="control-row">
+                    <button id="btn-up" class="control-btn">▲</button>
+                </div>
+                <div class="control-row">
+                    <button id="btn-left" class="control-btn">◀</button>
+                    <button id="btn-down" class="control-btn">▼</button>
+                    <button id="btn-right" class="control-btn">▶</button>
+                </div>
+            </div>
+
+            <div id="overlay" class="overlay">
+                <div id="start-screen" class="screen">
+                    <h1>SNAKE 3D</h1>
+                    <p>Use os botões ou as setas do teclado</p>
+                    <button id="start-button" class="action-btn">INICIAR JOGO</button>
+                </div>
+                <div id="game-over-screen" class="screen hidden">
+                    <h1>FIM DE JOGO</h1>
+                    <p>Sua pontuação final: <span id="final-score">0</span></p>
+                    <button id="restart-button" class="action-btn">JOGAR NOVAMENTE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
