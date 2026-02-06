@@ -11,6 +11,22 @@ Esta análise detalha a estrutura e o conteúdo dos arquivos do Free Fire Craftl
 | `SceneReview_1.bytes` | Imagens de visualização (screenshots) do mapa. | Múltiplos arquivos PNG |
 | `ProjectEditRecord_slot_1.meta.json` | Registro de edição do projeto (timestamps, flags). | JSON |
 
+## Localização da Lógica de Scripts
+
+A lógica de programação (blocos de script) do Free Fire Craftland está concentrada principalmente no arquivo:
+
+- **`FreeFire/ProjectData_slot_1.bytes`**
+
+Este arquivo atua como o "contêiner" principal de toda a inteligência do mapa. Ele armazena as conexões entre os blocos visuais, definições de funções, variáveis e eventos.
+
+### Como identificar os blocos:
+Os blocos de script não estão em arquivos separados, mas sim serializados dentro deste binário. Para extraí-los, é necessário:
+1. Ignorar o cabeçalho inicial de 6 bytes.
+2. Descomprimir o restante do conteúdo usando GZIP.
+3. Analisar o conteúdo resultante (geralmente em formato Protobuf), onde nomes como `typeName` precedem o identificador do bloco (ex: `OnAwake`, `GetLocalVar`).
+
+O arquivo **`UserLevelData_1.bytes`** serve como um complemento, contendo as strings de texto que aparecem nos blocos de interface e mapeamentos de IDs únicos para as funções definidas no `ProjectData`.
+
 ## Lógica de Script (Visual Scripting)
 
 Os seguintes blocos de script foram identificados no arquivo `ProjectData_slot_1.bytes`:
