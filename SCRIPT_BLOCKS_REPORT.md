@@ -1,6 +1,6 @@
 # Relatório de Blocos de Script - Free Fire Craftland
 
-Analisei os arquivos de projeto (`ProjectData_slot_1.bytes` e `ProjectData_slot_2.bytes`) e encontrei um total de **49 blocos únicos**. Abaixo estão organizados por categoria:
+Analisei os arquivos de projeto (`ProjectData_slot_1.bytes` e `ProjectData_slot_2.bytes`) e encontrei um total de **49 blocos únicos**.
 
 ## Evento
 - **OnAwake**: Acionado quando o bloco ou script é inicializado.
@@ -67,11 +67,7 @@ Analisei os arquivos de projeto (`ProjectData_slot_1.bytes` e `ProjectData_slot_
 
 ## Análise do Objeto "telegram"
 
-Encontrei o objeto nomeado **"telegram"** no arquivo `ProjectData_slot_2.bytes`. Ele é um cubo escalável (`BasicScalableItem`) com a textura de tijolos (`SceneEdit_Cube_Texture_Bricks`).
-
-Este objeto possui um grafo de script associado contendo os seguintes blocos:
-
-1. **OnMatchStart**: O script começa a rodar quando a partida inicia.
-2. **SetEntityProperty**: Define propriedades de alguma entidade (provavelmente global).
-3. **PauseGame**: Pausa o processamento do jogo.
-4. **If**: Executa lógica condicional.
+Encontrei o objeto nomeado **"telegram"** no arquivo `ProjectData_slot_2.bytes`.
+- **ID do Objeto**: 1771757735001
+- **Grafo Vinculado**: GR_76b56b2e-d429-4828-9d67-1323c4ae93e0
+- **Estrutura de Script**: OnMatchStart -> SetEntityProperty -> PauseGame -> If (Condition).

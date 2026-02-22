@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de Blocos Craftland</title>
+    <title>Visualizador de Blocos Craftland Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -12,40 +12,38 @@
             --bg-dark: #0f172a;
             --card-bg: #1e293b;
             --neon-cyan: #22d3ee;
-            --cat-evento: #ef4444;
-            --cat-acao: #22c55e;
-            --cat-dados: #3b82f6;
-            --cat-jogo: #ec4899;
-            --cat-logica: #eab308;
-            --cat-variavel: #a855f7;
-            --cat-funcao: #06b6d4;
+            --cat-evento: #ff4d4d;
+            --cat-acao: #4dff4d;
+            --cat-dados: #4da6ff;
+            --cat-jogo: #ff4da6;
+            --cat-logica: #ffcc00;
+            --cat-variavel: #bc13fe;
+            --cat-funcao: #00ffcc;
         }
         body {
             background-color: var(--bg-dark);
             color: #f8fafc;
             font-family: 'Inter', sans-serif;
         }
-        .block-shape {
+
+        /* Base Block Style */
+        .block-base {
             position: relative;
-            border-radius: 4px;
             padding: 10px 14px;
-            min-width: 160px;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.3);
+            min-width: 140px;
+            font-weight: 800;
+            font-size: 0.7rem;
+            color: #000;
             cursor: pointer;
             transition: all 0.2s;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            font-weight: 700;
-            font-size: 0.75rem;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
             user-select: none;
+            margin: 10px;
         }
-        .block-shape:hover {
-            transform: translateY(-2px);
-            box-shadow: 6px 6px 0px rgba(0,0,0,0.4);
-        }
-        /* Top Notch for executable blocks */
-        .notch-top::before {
+
+        /* Notches */
+        .has-notch-top::before {
             content: '';
             position: absolute;
             top: -6px;
@@ -55,8 +53,7 @@
             background: inherit;
             clip-path: polygon(0% 100%, 20% 0%, 80% 0%, 100% 100%);
         }
-        /* Bottom Socket for executable blocks */
-        .notch-bottom::after {
+        .has-notch-bottom::after {
             content: '';
             position: absolute;
             bottom: -6px;
@@ -68,319 +65,218 @@
             z-index: 10;
         }
 
-        .block-evento { background-color: var(--cat-evento); }
-        .block-acao { background-color: var(--cat-acao); }
-        .block-jogo { background-color: var(--cat-jogo); }
-        .block-variavel { background-color: var(--cat-variavel); }
-        .block-funcao { background-color: var(--cat-funcao); }
+        /* Shape: Standard (Action/Variable/Function) */
+        .shape-standard { border-radius: 4px; }
 
-        .block-dados {
-            background-color: var(--cat-dados);
+        /* Shape: Event (Hat) */
+        .shape-event {
+            border-radius: 4px 20px 4px 4px;
+            padding-top: 15px;
+        }
+        .shape-event::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 0;
+            width: 80px;
+            height: 10px;
+            background: inherit;
+            border-radius: 40px 40px 0 0;
+        }
+
+        /* Shape: Data (Value) */
+        .shape-data {
             border-radius: 20px;
-            clip-path: none;
-        }
-        .block-logica {
-            background-color: var(--cat-logica);
-            clip-path: polygon(8% 0%, 92% 0%, 100% 50%, 92% 100%, 8% 100%, 0% 50%);
-            padding: 10px 20px;
+            color: #fff;
+            padding: 8px 16px;
         }
 
-        .sidebar-item {
-            transition: all 0.2s;
-            border-left: 3px solid transparent;
+        /* Shape: Logic (Boolean/Condition) */
+        .shape-logic-cond {
+            clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+            padding: 8px 20px;
+            color: #000;
         }
-        .sidebar-item.active {
-            background-color: rgba(255,255,255,0.05);
-            border-left-color: var(--neon-cyan);
-            color: white;
+
+        /* Shape: Control (C-Block) */
+        .shape-control {
+            border-radius: 4px;
+            min-height: 80px;
+            align-items: flex-start;
+            padding-bottom: 30px;
         }
+        .shape-control .mouth {
+            position: absolute;
+            left: 15px;
+            top: 35px;
+            right: 0;
+            bottom: 10px;
+            background: var(--bg-dark);
+            border-radius: 4px 0 0 4px;
+        }
+        .shape-control .mouth::before { /* Inner Top Notch */
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 10px;
+            width: 20px;
+            height: 5px;
+            background: var(--bg-dark);
+            clip-path: polygon(0% 0%, 20% 100%, 80% 100%, 100% 0%);
+        }
+
+        /* Colors */
+        .bg-evento { background-color: var(--cat-evento); }
+        .bg-acao { background-color: var(--cat-acao); }
+        .bg-dados { background-color: var(--cat-dados); }
+        .bg-jogo { background-color: var(--cat-jogo); }
+        .bg-logica { background-color: var(--cat-logica); }
+        .bg-variavel { background-color: var(--cat-variavel); }
+        .bg-funcao { background-color: var(--cat-funcao); }
+
         .jetbrains { font-family: 'JetBrains Mono', monospace; }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .sidebar-item.active {
+            background-color: rgba(255,255,255,0.1);
+            color: var(--neon-cyan);
+        }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
-    <!-- Header -->
-    <header class="bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between z-50">
+    <header class="bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between shadow-xl">
         <div class="flex items-center space-x-3">
-            <div class="bg-cyan-500 p-2 rounded-lg">
-                <i class="fas fa-cubes text-slate-900 text-xl"></i>
-            </div>
-            <h1 class="text-xl font-extrabold tracking-tight">CRAFTLAND <span class="text-cyan-400 font-light italic">BLOCKS</span></h1>
+            <i class="fas fa-code text-cyan-400 text-2xl"></i>
+            <h1 class="text-xl font-black">CRAFTLAND <span class="text-cyan-400">ENGINE</span></h1>
         </div>
-        <div class="hidden lg:flex items-center space-x-6 text-sm font-medium text-slate-400">
-            <span class="flex items-center bg-slate-800 px-3 py-1.5 rounded-full"><i class="fas fa-project-diagram mr-2 text-cyan-500"></i> 49 Blocos Encontrados</span>
-            <span class="flex items-center bg-slate-800 px-3 py-1.5 rounded-full"><i class="fas fa-cube mr-2 text-amber-500"></i> Objeto "telegram" Identificado</span>
+        <div class="flex space-x-4">
+             <button onclick="showTelegram()" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded font-bold text-xs transition">
+                <i class="fab fa-telegram-plane mr-2"></i> OBJETO TELEGRAM
+             </button>
         </div>
-        <button onclick="showTelegramLogic()" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-sm font-bold transition flex items-center">
-            <i class="fab fa-telegram mr-2"></i> Ver Script Telegram
-        </button>
     </header>
 
     <main class="flex-1 flex overflow-hidden">
-        <!-- Sidebar -->
-        <aside class="w-64 bg-slate-950 border-r border-slate-800 flex flex-col shrink-0">
-            <div class="p-6">
-                <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Filtrar por Categoria</h2>
-                <nav class="space-y-1" id="category-list">
-                    <!-- Categories will be injected -->
-                </nav>
-            </div>
-            <div class="mt-auto p-6 border-t border-slate-900">
-                <div class="bg-slate-900 p-4 rounded-xl text-[11px] text-slate-400 leading-relaxed border border-slate-800">
-                    <p class="mb-2"><strong class="text-slate-200">DICA:</strong></p>
-                    <p>Os formatos indicam o tipo: blocos com "encaixe" são ações/eventos. Blocos redondos são dados. Blocos hexagonais são lógica.</p>
-                </div>
+        <aside class="w-60 bg-slate-950 border-r border-slate-800 p-4 overflow-y-auto">
+            <h2 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Categorias Reais</h2>
+            <div id="category-menu" class="space-y-1">
+                <!-- Injected -->
             </div>
         </aside>
 
-        <!-- Canvas Area -->
-        <section class="flex-1 bg-[radial-gradient(#1e293b_0.5px,transparent_0.5px)] [background-size:24px_24px] overflow-y-auto p-10" id="canvas">
-            <div id="content-area">
-                <div id="welcome-msg" class="h-[60vh] flex flex-col items-center justify-center text-center space-y-6 opacity-30">
-                    <i class="fas fa-shapes text-8xl"></i>
-                    <div>
-                        <h3 class="text-3xl font-black">Biblioteca de Blocos</h3>
-                        <p class="text-lg text-slate-400">Extraído dos arquivos ProjectData_slot_1 e 2.</p>
-                    </div>
-                </div>
-
-                <div id="blocks-container" class="space-y-12 hidden">
-                    <!-- Sections will be injected -->
-                </div>
+        <section class="flex-1 bg-slate-900/50 p-8 overflow-y-auto" id="workspace">
+            <div id="blocks-display" class="flex flex-wrap items-start content-start gap-4">
+                <!-- Injected -->
             </div>
         </section>
     </main>
 
-    <!-- Modal Info -->
-    <div id="info-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-[100] hidden p-4">
-        <div class="bg-slate-900 border border-slate-700 w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div id="modal-header-bg" class="p-8 text-white">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <span id="modal-cat" class="text-[10px] font-black uppercase tracking-tighter px-2 py-1 rounded bg-black/20 mb-3 inline-block">CATEGORIA</span>
-                        <h3 id="modal-title" class="text-3xl font-black tracking-tight">Nome do Bloco</h3>
-                    </div>
-                    <button onclick="closeModal()" class="bg-black/20 hover:bg-black/40 w-10 h-10 rounded-full flex items-center justify-center transition"><i class="fas fa-times"></i></button>
-                </div>
-            </div>
-            <div class="p-8 space-y-6">
+    <!-- Modal Técnico -->
+    <div id="tech-modal" class="fixed inset-0 bg-black/90 backdrop-blur flex items-center justify-center z-[100] hidden p-6">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div id="modal-head" class="p-6 flex justify-between items-center border-b border-slate-800">
                 <div>
-                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Funcionamento</h4>
-                    <p id="modal-desc" class="text-slate-300 text-lg leading-relaxed"></p>
+                    <span id="m-cat" class="text-[10px] font-bold px-2 py-1 rounded bg-black/30 mb-2 inline-block"></span>
+                    <h3 id="m-title" class="text-2xl font-black text-white"></h3>
                 </div>
-                <div class="bg-slate-950 rounded-2xl p-6 border border-slate-800">
-                    <div class="flex justify-between items-center mb-3">
-                        <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest">Exemplo no Script</h4>
-                        <span class="text-[10px] text-slate-600 jetbrains uppercase">Lógica Craftland</span>
+                <button onclick="closeModal()" class="text-slate-500 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-6">
+                <div>
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Funcionamento Visual</h4>
+                    <p id="m-desc" class="text-slate-300"></p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Código Real (Binary/Protobuf Data)</h4>
+                    <div class="bg-black rounded-lg p-4 font-mono text-xs text-green-400 border border-slate-800 whitespace-pre overflow-x-auto" id="m-code">
                     </div>
-                    <div id="modal-example" class="jetbrains text-cyan-400 text-sm whitespace-pre"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const blocksData = {
+        const blocks = {
             "Evento": [
-                { name: "OnAwake", desc: "Acionado no exato momento em que o objeto é carregado no mapa.", example: "OnAwake() {\n  // Inicializar variaveis\n}" },
-                { name: "OnClickHudButton", desc: "Detecta quando o jogador interage com um botão de interface customizado.", example: "OnClickHudButton(buttonId) {\n  If (buttonId == 'start') ...\n}" },
-                { name: "OnFixedUpdate", desc: "Executa a lógica em intervalos constantes, ideal para temporizadores ou movimentação.", example: "OnFixedUpdate() {\n  timer += 1\n}" },
-                { name: "OnMatchStart", desc: "Evento global disparado quando o cronômetro da partida chega a zero.", example: "OnMatchStart() {\n  ExibirMensagem('Gogogo!')\n}" },
-                { name: "OnObtainItem", desc: "Disparado quando um jogador coleta um item do chão ou de um baú.", example: "OnObtainItem(item) {\n  Points += 10\n}" },
-                { name: "OnPlayerAdd", desc: "Acionado quando um jogador entra no servidor ou renasce.", example: "OnPlayerAdd(player) {\n  AddItemToCharacter(player, 'Pistol')\n}" },
-                { name: "OnPlayerDead", desc: "Detecta a eliminação de um jogador.", example: "OnPlayerDead(victim, killer) {\n  killer.Kills += 1\n}" },
-                { name: "OnUseItem", desc: "Gatilho para quando o jogador consome um item ou usa um kit médico.", example: "OnUseItem(itemId) {\n  If (itemId == 'medkit') ...\n}" },
-                { name: "OnWield", desc: "Acionado quando o jogador troca para uma arma ou item específico na mão.", example: "OnWield(weaponId) {\n  SetSpeed(1.2)\n}" }
+                { name: "OnAwake", desc: "Inicializa o script.", code: "typeName: OnAwake\nid: 'FC_765cb713-d41d-4eb7-8a7c-68e63d45c'\nEnabled: true\nbodies: [ ... ]" },
+                { name: "OnMatchStart", desc: "Início da partida.", code: "typeName: OnMatchStart\nid: 'FC_abe971e2-f0a0-4483-abfc-fe53e33ddfda'\nEnabled: true\nbodies: [ ... ]" },
+                { name: "OnPlayerDead", desc: "Morte de jogador.", code: "typeName: OnPlayerDead\nid: 'FC_...'\nEnabled: true\nbodies: [ ... ]" }
             ],
             "Ação": [
-                { name: "AddItemToCharacter", desc: "Força a adição de um item diretamente no inventário do jogador.", example: "AddItemToCharacter(thisPlayer, 'M4A1', 30)" },
-                { name: "CreateCustomHud", desc: "Gera uma interface visual única (menus, placares, botões).", example: "CreateCustomHud('Scoreboard_Layout')" },
-                { name: "CreateInternalHud", desc: "Ativa elementos de UI nativos do Free Fire.", example: "CreateInternalHud(HealthBar_Type)" },
-                { name: "ModifyFormulaProperty", desc: "Altera atributos complexos usando cálculos matemáticos internos.", example: "ModifyFormulaProperty('MaxHP', '+', 50)" },
-                { name: "RemovePlayerClothIDByWardrobeType", desc: "Remove roupas específicas para mudar o visual do jogador.", example: "RemovePlayerClothIDByWardrobeType('Shirt')" },
-                { name: "ReviveOnNextFrame", desc: "Renasce o jogador instantaneamente no próximo ciclo do jogo.", example: "ReviveOnNextFrame(victimPlayer)" },
-                { name: "SetEntityProperty", desc: "Modifica propriedades como Vida (HP), Escudo, Velocidade ou Posição.", example: "SetEntityProperty(player, 'HP', 200)" },
-                { name: "SetReplicationDataSmoothly", desc: "Sincroniza variáveis entre todos os jogadores sem 'lags' visuais.", example: "SetReplicationDataSmoothly('GlobalScore', value)" },
-                { name: "TeleportPlayerPositionAndForward", desc: "Move o jogador e define para onde ele estará olhando.", example: "Teleport(player, Vector3(0, 10, 0), Vector3(0, 0, 1))" },
-                { name: "WaitForSeconds", desc: "Cria um atraso na execução dos próximos blocos.", example: "WaitForSeconds(3.5)\nSetHP(player, 100)" }
-            ],
-            "Dados": [
-                { name: "AllPlayers", desc: "Retorna uma lista contendo todas as referências de jogadores ativos.", example: "ForEach(p in AllPlayers) { ... }" },
-                { name: "ColorGetter", desc: "Utilitário para selecionar cores (RGBA) para textos ou efeitos.", example: "SetTextColor(ColorGetter('#FF0000'))" },
-                { name: "ConstBool", desc: "Um valor booleano constante (Verdadeiro ou Falso).", example: "SetEnabled(ConstBool(True))" },
-                { name: "ConstFloatOrInt", desc: "Números fixos para serem usados em cálculos ou contadores.", example: "value = 100" },
-                { name: "ConstString", desc: "Um texto fixo.", example: "name = 'Bot Telegram'" },
-                { name: "ConstVector3", desc: "Um ponto fixo no espaço 3D (X, Y, Z).", example: "SpawnPoint = (50, 2, -10)" },
-                { name: "EntityGetter", desc: "Localiza uma entidade no mapa por seu ID ou tipo.", example: "Target = EntityGetter('Boss_01')" },
-                { name: "EquipmentSlot", desc: "Identifica onde o item está equipado (Cabeça, Tronco, Pernas).", example: "If (item.slot == EquipmentSlot.Head)" },
-                { name: "GetEntityProperty", desc: "Lê o valor atual de uma propriedade de um objeto ou jogador.", example: "currentHP = GetEntityProperty(p, 'HP')" },
-                { name: "GetPlayerBagItemCount", desc: "Verifica quantos itens de um tipo o jogador possui.", example: "ammoCount = GetPlayerBagItemCount(p, 'AR_Ammo')" },
-                { name: "GetPlayerEquipments", desc: "Retorna a lista de tudo que o jogador está vestindo/usando.", example: "outfit = GetPlayerEquipments(p)" },
-                { name: "IconType", desc: "Define qual ícone exibir em notificações ou botões.", example: "ShowIcon(IconType.Warning)" },
-                { name: "InternalHudType", desc: "Enumeração de interfaces padrão do Free Fire.", example: "Open(InternalHudType.Shop)" },
-                { name: "ItemGoodsIDType", desc: "Pega o ID numérico de um item da base de dados.", example: "id = ItemGoodsIDType('Medkit')" },
-                { name: "NewVector3", desc: "Cria um vetor dinâmico a partir de variáveis X, Y, Z.", example: "pos = NewVector3(x, y, z)" },
-                { name: "PropertyModifyType", desc: "Define se a mudança será Soma, Subtração ou Substituição.", example: "Modify(..., PropertyModifyType.Add)" },
-                { name: "RandomFloat", desc: "Gera um número decimal aleatório (ex: para chance de drop).", example: "If (RandomFloat(0, 1) > 0.5)" },
-                { name: "ThisEntity", desc: "Referência ao objeto que disparou o script atual.", example: "SetHP(ThisEntity, 999)" },
-                { name: "WardrobeType", desc: "Tipo de categoria de vestuário.", example: "WardrobeType.Hat" }
-            ],
-            "Jogo": [
-                { name: "EndCurrentPhase", desc: "Força o encerramento da rodada atual e vai para o intervalo.", example: "EndCurrentPhase()" },
-                { name: "PauseGame", desc: "Congela o estado do jogo (usado em cutscenes ou vitórias).", example: "PauseGame(True)" }
+                { name: "AddItemToCharacter", desc: "Dá item ao jogador.", code: "typeName: AddItemToCharacter\nid: 'FC_c60acb7f-888d-49ce-aeaf-15e86d73041d'\nvalues: [\n  { type: Player, value: GetLocalVar },\n  { type: ItemID, value: ... }\n]" },
+                { name: "SetEntityProperty", desc: "Altera status.", code: "typeName: SetEntityProperty\nid: 'FC_e8f2dcf4-d6e6-4d65-9163-33ce32e607f5'\nvalues: [ Target, PropName, Value ]" }
             ],
             "Lógica": [
-                { name: "Comparer", desc: "Compara dois valores. Suporta ==, !=, >, <, >=, <=.", example: "If (Comparer(Score, '>=', 100))" },
-                { name: "ForEach", desc: "Repete um bloco de código para cada elemento de uma lista.", example: "ForEach(player in AllPlayers) { ... }" },
-                { name: "If", desc: "O bloco fundamental de decisão. Executa se a condição for real.", example: "If (isAlive) { ... }" },
-                { name: "LogicalOperation", desc: "Combina condições usando E (AND) ou OU (OR).", example: "If (hasKey && isAtDoor)" },
-                { name: "While", desc: "Cria um loop que roda enquanto uma condição for atendida.", example: "While (timer > 0) { ... }" }
+                { name: "If", desc: "Bloco de decisão real com suporte a Else.", code: "typeName: If\nid: 'FC_d2734ae8-ccbd-4cf5-91e4-0a90e0d4438d'\nbodies: 2 (Then, Else)\nvalues: [ Condition ]", shape: "control" },
+                { name: "While", desc: "Loop de repetição.", code: "typeName: While\nid: 'FC_e1af4c35-9a42-47aa-ab41-e20831fe7498'\nbodies: 1 (Loop)\nvalues: [ Condition ]", shape: "control" },
+                { name: "Comparer", desc: "Comparação lógica.", code: "typeName: Comparer\nid: 'FC_...'\nvalues: [ A, Operator, B ]", shape: "cond" }
             ],
-            "Variável": [
-                { name: "DefLocalVar", desc: "Cria um espaço na memória para guardar um dado temporário.", example: "DefLocalVar('count', 0)" },
-                { name: "GetLocalVar", desc: "Lê o valor de uma variável que foi definida anteriormente.", example: "current = GetLocalVar('count')" }
-            ],
-            "Função": [
-                { name: "CallActionFunc", desc: "Executa um conjunto de blocos organizados em uma função.", example: "CallActionFunc('ResetMap')" },
-                { name: "DefFuncWithoutReturn", desc: "Agrupa blocos para reutilização sem enviar valor de volta.", example: "DefFuncWithoutReturn('SpamZombies') { ... }" }
+            "Dados": [
+                { name: "ThisEntity", desc: "Referência ao objeto.", code: "typeName: ThisEntity\nid: 'FC_1b57e193-bb...'", shape: "data" },
+                { name: "GetLocalVar", desc: "Pega variável.", code: "typeName: GetLocalVar\nid: 'FC_f103560e-9...'", shape: "data" }
             ]
         };
 
-        const colors = {
-            "Evento": "var(--cat-evento)",
-            "Ação": "var(--cat-acao)",
-            "Dados": "var(--cat-dados)",
-            "Jogo": "var(--cat-jogo)",
-            "Lógica": "var(--cat-logica)",
-            "Variável": "var(--cat-variavel)",
-            "Função": "var(--cat-funcao)"
-        };
-
-        const icons = {
-            "Evento": "fa-bolt",
-            "Ação": "fa-play",
-            "Dados": "fa-database",
-            "Jogo": "fa-gamepad",
-            "Lógica": "fa-code-branch",
-            "Variável": "fa-box",
-            "Função": "fa-vial"
-        };
+        const cats = Object.keys(blocks);
+        const colors = { Evento: "evento", Ação: "acao", Lógica: "logica", Dados: "dados" };
+        const icons = { Evento: "bolt", Ação: "play", Lógica: "code-branch", Dados: "database" };
 
         function init() {
-            renderSidebar();
-        }
-
-        function renderSidebar() {
-            const list = document.getElementById('category-list');
-            list.innerHTML = '';
-
-            // All option
-            const allBtn = document.createElement('button');
-            allBtn.className = 'sidebar-item active w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white text-sm font-semibold';
-            allBtn.innerHTML = `<i class="fas fa-layer-group w-5"></i> <span>Todos os Blocos</span>`;
-            allBtn.onclick = () => filterCategory('All', allBtn);
-            list.appendChild(allBtn);
-
-            Object.keys(blocksData).forEach(cat => {
+            const menu = document.getElementById('category-menu');
+            cats.forEach(c => {
                 const btn = document.createElement('button');
-                btn.className = 'sidebar-item w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-slate-400 hover:text-white text-sm font-semibold';
-                btn.innerHTML = `<i class="fas ${icons[cat]} w-5" style="color: ${colors[cat]}"></i> <span>${cat}</span>`;
-                btn.onclick = () => filterCategory(cat, btn);
-                list.appendChild(btn);
+                btn.className = `sidebar-item w-full text-left px-3 py-2 rounded text-xs font-bold text-slate-400 hover:text-white transition flex items-center space-x-2`;
+                btn.innerHTML = `<i class="fas fa-${icons[c]} w-4"></i> <span>${c}</span>`;
+                btn.onclick = () => render(c);
+                menu.appendChild(btn);
             });
-
-            renderBlocks('All');
+            render('Lógica');
         }
 
-        function filterCategory(cat, btn) {
-            document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderBlocks(cat);
-        }
+        function render(cat) {
+            const display = document.getElementById('blocks-display');
+            display.innerHTML = '';
 
-        function renderBlocks(filter) {
-            const container = document.getElementById('blocks-container');
-            const welcome = document.getElementById('welcome-msg');
-            const grid = document.getElementById('blocks-grid');
+            blocks[cat].forEach(b => {
+                const el = document.createElement('div');
+                let classes = `block-base bg-${colors[cat]} `;
 
-            welcome.classList.add('hidden');
-            container.classList.remove('hidden');
-            container.innerHTML = '';
+                if (cat === 'Evento') classes += 'shape-event has-notch-bottom';
+                else if (cat === 'Ação') classes += 'shape-standard has-notch-top has-notch-bottom';
+                else if (cat === 'Dados') classes += 'shape-data';
+                else if (cat === 'Lógica') {
+                    if (b.shape === 'control') classes += 'shape-control has-notch-top has-notch-bottom';
+                    else classes += 'shape-logic-cond';
+                }
 
-            const categoriesToRender = filter === 'All' ? Object.keys(blocksData) : [filter];
-
-            categoriesToRender.forEach(cat => {
-                const section = document.createElement('div');
-                section.innerHTML = `
-                    <div class="flex items-center space-x-4 mb-8 border-b border-slate-800 pb-4">
-                        <div class="p-2 rounded-lg" style="background-color: ${colors[cat]}22">
-                            <i class="fas ${icons[cat]} text-xl" style="color: ${colors[cat]}"></i>
-                        </div>
-                        <h2 class="text-2xl font-black uppercase tracking-tight">${cat}s</h2>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8">
-                        ${blocksData[cat].map(block => {
-                            const isExec = ['Evento', 'Ação', 'Jogo', 'Variável', 'Função'].includes(cat);
-                            const shapeClass = `block-${cat.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")}`;
-                            const notchClasses = isExec ? 'notch-top notch-bottom' : '';
-
-                            return `
-                                <div onclick="showDetails('${cat}', '${block.name}')" class="block-shape ${shapeClass} ${notchClasses} text-white">
-                                    <i class="fas ${icons[cat]} mr-2 opacity-50 text-[10px]"></i>
-                                    ${block.name}
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
+                el.className = classes;
+                el.innerHTML = `
+                    ${b.shape === 'control' ? '<div class="mouth"></div>' : ''}
+                    <i class="fas fa-${icons[cat]} mr-2 opacity-30"></i>
+                    <span>${b.name}</span>
                 `;
-                container.appendChild(section);
+                el.onclick = () => showTech(cat, b);
+                display.appendChild(el);
             });
         }
 
-        function showDetails(cat, name) {
-            const block = blocksData[cat].find(b => b.name === name);
-            if (!block) return;
-
-            const modal = document.getElementById('info-modal');
-            const title = document.getElementById('modal-title');
-            const catLabel = document.getElementById('modal-cat');
-            const desc = document.getElementById('modal-desc');
-            const example = document.getElementById('modal-example');
-            const header = document.getElementById('modal-header-bg');
-
-            title.textContent = block.name;
-            catLabel.textContent = cat;
-            desc.textContent = block.desc;
-            example.textContent = block.example;
-            header.style.backgroundColor = colors[cat];
-
-            modal.classList.remove('hidden');
+        function showTech(cat, b) {
+            document.getElementById('m-title').textContent = b.name;
+            document.getElementById('m-cat').textContent = cat;
+            document.getElementById('m-desc').textContent = b.desc;
+            document.getElementById('m-code').textContent = b.code;
+            document.getElementById('tech-modal').classList.remove('hidden');
         }
 
         function closeModal() {
-            document.getElementById('info-modal').classList.add('hidden');
+            document.getElementById('tech-modal').classList.add('hidden');
         }
 
-        function showTelegramLogic() {
-            const modal = document.getElementById('info-modal');
-            const title = document.getElementById('modal-title');
-            const catLabel = document.getElementById('modal-cat');
-            const desc = document.getElementById('modal-desc');
-            const example = document.getElementById('modal-example');
-            const header = document.getElementById('modal-header-bg');
-
-            title.textContent = 'Objeto "telegram"';
-            catLabel.textContent = 'Script de Objeto';
-            desc.innerHTML = 'Este objeto no mapa (um Cubo de Tijolos) possui uma lógica de controle de partida vinculada. <br><br><strong>Estrutura de Blocos encontrada:</strong>';
-            example.innerHTML = '// Fluxo do Objeto Telegram\nOnMatchStart() {\n  SetEntityProperty(Global, ...)\n  PauseGame(True)\n  If (Condition) {\n     // Lógica interna\n  }\n}';
-            header.style.backgroundColor = '#4f46e5';
-
-            modal.classList.remove('hidden');
+        function showTelegram() {
+            showTech('Objeto', {
+                name: 'telegram (Cubo)',
+                desc: 'Objeto de mapa com script vinculado.',
+                code: 'ObjectID: 1771757735001\nType: BasicScalableItem\nTexture: Bricks\nGraphID: GR_76b56b2e-d429-4828-9d67-1323c4ae93e0\n\nSTRUCTURE:\n- OnMatchStart\n  - SetEntityProperty\n  - PauseGame\n  - If (Condition)\n     - [Internal Actions]'
+            });
         }
 
         init();
