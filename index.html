@@ -36,6 +36,21 @@
         .bg-neon-gradient {
             background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
         }
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .file-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .modal-content-wrap {
+                width: 95%;
+                height: 90%;
+            }
+        }
+        @media (max-width: 480px) {
+            .file-grid {
+                grid-template-columns: repeat(1, minmax(0, 1fr));
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -51,12 +66,23 @@
         </div>
     </nav>
 
+    <!-- Progress Bar Global -->
+    <div id="progress-bar" class="h-1 w-full bg-gray-900 hidden fixed top-0 left-0 z-[100]">
+        <div id="progress-fill" class="h-full bg-neon-cyan transition-all duration-300 shadow-[0_0_10px_#00f3ff]"></div>
+    </div>
+
     <!-- Main Content -->
-    <main class="flex-1 flex overflow-hidden">
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden">
         <!-- Sidebar / Upload Area -->
-        <aside class="w-80 bg-card-bg border-r border-gray-800 p-6 flex flex-col space-y-6">
+        <aside id="sidebar" class="w-full md:w-80 bg-card-bg border-b md:border-b-0 md:border-r border-gray-800 p-4 md:p-6 flex flex-col space-y-6 transition-all duration-300">
+            <div class="flex justify-between items-center md:block">
+                <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider md:mb-4">Upload</h2>
+                <button id="toggle-sidebar" class="md:hidden text-gray-400"><i class="fas fa-chevron-down"></i></button>
+            </div>
+
+            <div id="upload-controls" class="space-y-6 hidden md:block">
             <div>
-                <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Upload de Arquivos</h2>
+                <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider hidden md:block mb-4">Upload de Arquivos</h2>
                 <div id="dropzone" class="border-2 border-dashed border-gray-700 rounded-lg p-8 text-center hover:border-cyan-500 transition cursor-pointer bg-black/20">
                     <i class="fas fa-cloud-upload-alt text-3xl mb-3 text-gray-600"></i>
                     <p class="text-xs text-gray-400">Arraste arquivos .bytes ou .zip aqui</p>
@@ -65,12 +91,20 @@
                 </div>
             </div>
 
-            <div class="flex-1 overflow-y-auto">
-                <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Status da Análise</h2>
-                <div id="status-container" class="space-y-3 text-xs">
-                    <div class="p-3 rounded bg-black/30 border border-gray-800">
-                        <p class="text-gray-400 italic">Aguardando arquivos...</p>
+                <div class="flex-1 overflow-y-auto max-h-40 md:max-h-full">
+                    <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Status</h2>
+                    <div id="status-container" class="space-y-3 text-xs">
+                        <div class="p-3 rounded bg-black/30 border border-gray-800">
+                            <p class="text-gray-400 italic">Aguardando arquivos...</p>
+                        </div>
                     </div>
+                </div>
+
+                <div class="mt-auto pt-4 md:pt-6 border-t border-gray-800">
+                    <a href="craftland_explorer.zip" download class="flex items-center justify-center space-x-2 p-3 rounded bg-gray-800 hover:bg-gray-700 transition text-[10px] md:text-xs font-bold">
+                        <i class="fas fa-download text-cyan-500"></i>
+                        <span>Baixar Código Fonte (ZIP)</span>
+                    </a>
                 </div>
             </div>
         </aside>
@@ -84,7 +118,7 @@
                     <div id="file-count" class="text-sm text-gray-400">0 arquivos</div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="file-grid">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 file-grid" id="file-grid">
                     <!-- Files will be injected here -->
                 </div>
             </div>
@@ -100,8 +134,8 @@
     </main>
 
     <!-- Modal para visualização -->
-    <div id="modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden">
-        <div class="bg-card-bg w-11/12 h-5/6 rounded-xl border border-gray-800 flex flex-col shadow-2xl">
+    <div id="modal" class="fixed inset-0 bg-black/90 flex items-center justify-center z-[100] hidden p-2">
+        <div class="bg-card-bg w-full md:w-11/12 h-[95%] md:h-5/6 rounded-xl border border-gray-800 flex flex-col shadow-2xl modal-content-wrap">
             <div class="p-4 border-b border-gray-800 flex justify-between items-center">
                 <h3 id="modal-title" class="font-bold text-lg neon-text">Visualizar Arquivo</h3>
                 <button id="close-modal" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>

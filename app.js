@@ -131,6 +131,17 @@ function setupEventListeners() {
         handleFiles(e.target.files);
     });
 
+    // Mobile Sidebar Toggle
+    const toggleBtn = document.getElementById('toggle-sidebar');
+    const uploadControls = document.getElementById('upload-controls');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            uploadControls.classList.toggle('hidden');
+            toggleBtn.querySelector('i').classList.toggle('fa-chevron-down');
+            toggleBtn.querySelector('i').classList.toggle('fa-chevron-up');
+        });
+    }
+
     // Modal
     closeModal.addEventListener('click', () => {
         modal.classList.add('hidden');
@@ -192,18 +203,35 @@ function renderBlocks() {
 
 // Logic for handling files
 async function handleFiles(fileList) {
-    addStatus(`Iniciando análise de ${fileList.length} itens...`);
-
-    for (let file of fileList) {
-        if (file.name.endsWith('.zip')) {
-            await processZip(file);
-        } else {
-            await processFile(file);
-        }
+    if (typeof JSZip === 'undefined' || typeof pako === 'undefined') {
+        addStatus("Erro: Bibliotecas externas (JSZip/Pako) não carregadas. Verifique sua conexão.", "error");
+        return;
     }
 
-    renderFileList();
-    addStatus(`Análise concluída. Total de arquivos: ${state.files.length}`, 'success');
+    const files = Array.from(fileList);
+    if (files.length === 0) return;
+
+    addStatus(`Iniciando análise de ${files.length} itens...`);
+    showProgress(0);
+
+    try {
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (file.name.endsWith('.zip')) {
+                await processZip(file);
+            } else {
+                await processFile(file);
+            }
+            showProgress(((i + 1) / files.length) * 100);
+        }
+        addStatus(`Análise concluída. Total de arquivos: ${state.files.length}`, 'success');
+    } catch (error) {
+        console.error("Erro no processamento:", error);
+        addStatus(`Erro fatal: ${error.message}`, 'error');
+    } finally {
+        renderFileList();
+        setTimeout(() => hideProgress(), 1000);
+    }
 }
 
 async function processZip(zipFile) {
@@ -452,6 +480,18 @@ function toHex(buffer) {
     return Array.from(new Uint8Array(buffer))
         .map(b => b.toString(16).padStart(2, '0'))
         .join(' ');
+}
+
+function showProgress(percent) {
+    const bar = document.getElementById('progress-bar');
+    const fill = document.getElementById('progress-fill');
+    if (bar) bar.classList.remove('hidden');
+    if (fill) fill.style.width = `${percent}%`;
+}
+
+function hideProgress() {
+    const bar = document.getElementById('progress-bar');
+    if (bar) bar.classList.add('hidden');
 }
 
 function addStatus(msg, type = 'info') {
