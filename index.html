@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Fire Craftland Explorer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-blue: #005fbc;
+            --dark-bg: #0a0a0f;
+            --card-bg: #16161e;
+        }
+        body {
+            background-color: var(--dark-bg);
+            color: #e0e0e0;
+            font-family: 'Inter', sans-serif;
+        }
+        .neon-border {
+            border: 1px solid var(--neon-cyan);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+        }
+        .neon-text {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 5px rgba(0, 243, 255, 0.5);
+        }
+        .tab-active {
+            border-bottom: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+        }
+        .bg-neon-gradient {
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav class="bg-card-bg border-b border-gray-800 p-4 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <i class="fas fa-cube text-2xl neon-text"></i>
+            <h1 class="text-xl font-bold tracking-wider">CRAFTLAND <span class="neon-text">EXPLORER</span></h1>
+        </div>
+        <div class="flex space-x-4">
+            <button id="tab-files" class="tab-active px-4 py-2 font-medium hover:text-cyan-400 transition">Gerenciador de Arquivos</button>
+            <button id="tab-blocks" class="px-4 py-2 font-medium hover:text-cyan-400 transition text-gray-400">Blocos de Script</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex overflow-hidden">
+        <!-- Sidebar / Upload Area -->
+        <aside class="w-80 bg-card-bg border-r border-gray-800 p-6 flex flex-col space-y-6">
+            <div>
+                <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Upload de Arquivos</h2>
+                <div id="dropzone" class="border-2 border-dashed border-gray-700 rounded-lg p-8 text-center hover:border-cyan-500 transition cursor-pointer bg-black/20">
+                    <i class="fas fa-cloud-upload-alt text-3xl mb-3 text-gray-600"></i>
+                    <p class="text-xs text-gray-400">Arraste arquivos .bytes ou .zip aqui</p>
+                    <input type="file" id="fileInput" multiple class="hidden">
+                    <button onclick="document.getElementById('fileInput').click()" class="mt-4 px-4 py-2 bg-neon-gradient rounded text-sm font-bold hover:opacity-90 transition">Selecionar</button>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto">
+                <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Status da Análise</h2>
+                <div id="status-container" class="space-y-3 text-xs">
+                    <div class="p-3 rounded bg-black/30 border border-gray-800">
+                        <p class="text-gray-400 italic">Aguardando arquivos...</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Content View -->
+        <section id="main-view" class="flex-1 overflow-y-auto p-6 relative">
+            <!-- File Manager View -->
+            <div id="view-files" class="space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">Arquivos Encontrados</h2>
+                    <div id="file-count" class="text-sm text-gray-400">0 arquivos</div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="file-grid">
+                    <!-- Files will be injected here -->
+                </div>
+            </div>
+
+            <!-- Script Blocks View (Hidden by default) -->
+            <div id="view-blocks" class="hidden space-y-8">
+                <h2 class="text-2xl font-bold">Biblioteca de Blocos de Script</h2>
+                <div id="blocks-container" class="grid grid-cols-1 gap-8">
+                    <!-- Categories will be injected here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal para visualização -->
+    <div id="modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 hidden">
+        <div class="bg-card-bg w-11/12 h-5/6 rounded-xl border border-gray-800 flex flex-col shadow-2xl">
+            <div class="p-4 border-b border-gray-800 flex justify-between items-center">
+                <h3 id="modal-title" class="font-bold text-lg neon-text">Visualizar Arquivo</h3>
+                <button id="close-modal" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="modal-content" class="flex-1 overflow-auto p-6 font-mono text-sm">
+                <!-- Content -->
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
