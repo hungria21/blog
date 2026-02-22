@@ -64,3 +64,14 @@ Analisei os arquivos de projeto (`ProjectData_slot_1.bytes` e `ProjectData_slot_
 ## Função
 - **CallActionFunc**: Executa uma função de ação previamente definida.
 - **DefFuncWithoutReturn**: Define uma função de script que executa tarefas sem retornar valor.
+
+## Análise do Objeto "telegram"
+
+Encontrei o objeto nomeado **"telegram"** no arquivo `ProjectData_slot_2.bytes`. Ele é um cubo escalável (`BasicScalableItem`) com a textura de tijolos (`SceneEdit_Cube_Texture_Bricks`).
+
+Este objeto possui um grafo de script associado contendo os seguintes blocos:
+
+1. **OnMatchStart**: O script começa a rodar quando a partida inicia.
+2. **SetEntityProperty**: Define propriedades de alguma entidade (provavelmente global).
+3. **PauseGame**: Pausa o processamento do jogo.
+4. **If**: Executa lógica condicional.
