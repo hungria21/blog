@@ -3,283 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de Blocos Craftland Pro</title>
+    <title>Craftland Script Architect</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0f172a;
-            --card-bg: #1e293b;
-            --neon-cyan: #22d3ee;
-            --cat-evento: #ff4d4d;
-            --cat-acao: #4dff4d;
-            --cat-dados: #4da6ff;
-            --cat-jogo: #ff4da6;
-            --cat-logica: #ffcc00;
-            --cat-variavel: #bc13fe;
-            --cat-funcao: #00ffcc;
+            --bg-deep: #020617;
+            --panel-bg: #0f172a;
+            --accent: #38bdf8;
+            --c-event: #ff4d4d;
+            --c-action: #4dff4d;
+            --c-data: #4da6ff;
+            --c-logic: #ffcc00;
+            --c-var: #bc13fe;
+            --c-func: #00ffcc;
         }
         body {
-            background-color: var(--bg-dark);
-            color: #f8fafc;
+            background-color: var(--bg-deep);
+            color: #cbd5e1;
             font-family: 'Inter', sans-serif;
         }
+        .fira { font-family: 'Fira Code', monospace; }
 
-        /* Base Block Style */
-        .block-base {
-            position: relative;
-            padding: 10px 14px;
-            min-width: 140px;
-            font-weight: 800;
-            font-size: 0.7rem;
-            color: #000;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            user-select: none;
-            margin: 10px;
+        .block-container { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+        .block {
+            position: relative; padding: 10px 16px; border-radius: 4px; font-size: 11px; font-weight: 800;
+            color: #000; box-shadow: 4px 4px 0px rgba(0,0,0,0.3); min-width: 140px; cursor: pointer;
+            user-select: none; display: flex; align-items: center; transition: all 0.1s;
         }
+        .block:hover { transform: scale(1.02); }
 
-        /* Notches */
-        .has-notch-top::before {
-            content: '';
-            position: absolute;
-            top: -6px;
-            left: 15px;
-            width: 24px;
-            height: 6px;
-            background: inherit;
-            clip-path: polygon(0% 100%, 20% 0%, 80% 0%, 100% 100%);
+        .block.executable::before {
+            content: ''; position: absolute; top: -6px; left: 15px; width: 24px; height: 6px;
+            background: inherit; clip-path: polygon(0% 100%, 20% 0%, 80% 0%, 100% 100%);
         }
-        .has-notch-bottom::after {
-            content: '';
-            position: absolute;
-            bottom: -6px;
-            left: 15px;
-            width: 24px;
-            height: 6px;
-            background: var(--bg-dark);
-            clip-path: polygon(0% 0%, 20% 100%, 80% 100%, 100% 0%);
-            z-index: 10;
+        .block.executable::after {
+            content: ''; position: absolute; bottom: -6px; left: 15px; width: 24px; height: 6px;
+            background: var(--bg-deep); clip-path: polygon(0% 0%, 20% 100%, 80% 100%, 100% 0%); z-index: 10;
         }
 
-        /* Shape: Standard (Action/Variable/Function) */
-        .shape-standard { border-radius: 4px; }
+        .b-event { background-color: var(--c-event); border-radius: 12px 12px 4px 4px; padding-top: 14px; }
+        .b-event::before { display: none; }
+        .b-action { background-color: var(--c-action); }
+        .b-logic { background-color: var(--c-logic); }
+        .b-data { background-color: var(--c-data); border-radius: 20px; }
+        .b-data::before, .b-data::after { display: none; }
 
-        /* Shape: Event (Hat) */
-        .shape-event {
-            border-radius: 4px 20px 4px 4px;
-            padding-top: 15px;
-        }
-        .shape-event::before {
-            content: '';
-            position: absolute;
-            top: -10px;
-            left: 0;
-            width: 80px;
-            height: 10px;
-            background: inherit;
-            border-radius: 40px 40px 0 0;
+        .block-c { min-height: 80px; padding-bottom: 30px; }
+        .block-c .mouth {
+            position: absolute; left: 15px; top: 35px; right: 0; bottom: 10px;
+            background: var(--bg-deep); border-radius: 4px 0 0 4px;
         }
 
-        /* Shape: Data (Value) */
-        .shape-data {
-            border-radius: 20px;
-            color: #fff;
-            padding: 8px 16px;
-        }
-
-        /* Shape: Logic (Boolean/Condition) */
-        .shape-logic-cond {
-            clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
-            padding: 8px 20px;
-            color: #000;
-        }
-
-        /* Shape: Control (C-Block) */
-        .shape-control {
-            border-radius: 4px;
-            min-height: 80px;
-            align-items: flex-start;
-            padding-bottom: 30px;
-        }
-        .shape-control .mouth {
-            position: absolute;
-            left: 15px;
-            top: 35px;
-            right: 0;
-            bottom: 10px;
-            background: var(--bg-dark);
-            border-radius: 4px 0 0 4px;
-        }
-        .shape-control .mouth::before { /* Inner Top Notch */
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 10px;
-            width: 20px;
-            height: 5px;
-            background: var(--bg-dark);
-            clip-path: polygon(0% 0%, 20% 100%, 80% 100%, 100% 0%);
-        }
-
-        /* Colors */
-        .bg-evento { background-color: var(--cat-evento); }
-        .bg-acao { background-color: var(--cat-acao); }
-        .bg-dados { background-color: var(--cat-dados); }
-        .bg-jogo { background-color: var(--cat-jogo); }
-        .bg-logica { background-color: var(--cat-logica); }
-        .bg-variavel { background-color: var(--cat-variavel); }
-        .bg-funcao { background-color: var(--cat-funcao); }
-
-        .jetbrains { font-family: 'JetBrains Mono', monospace; }
-
-        .sidebar-item.active {
-            background-color: rgba(255,255,255,0.1);
-            color: var(--neon-cyan);
-        }
+        .sidebar-item.active { background-color: rgba(255,255,255,0.1); color: var(--accent); }
     </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden">
-    <header class="bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between shadow-xl">
+<body class="h-screen flex flex-col">
+    <nav class="bg-slate-950 border-b border-slate-800 p-4 flex items-center justify-between z-50">
         <div class="flex items-center space-x-3">
-            <i class="fas fa-code text-cyan-400 text-2xl"></i>
-            <h1 class="text-xl font-black">CRAFTLAND <span class="text-cyan-400">ENGINE</span></h1>
+            <div class="bg-sky-500 p-1.5 rounded shadow-lg shadow-sky-500/20">
+                <i class="fas fa-terminal text-slate-950 text-lg"></i>
+            </div>
+            <h1 class="text-lg font-black tracking-tighter uppercase">Craftland <span class="text-sky-400">Architect</span></h1>
         </div>
-        <div class="flex space-x-4">
-             <button onclick="showTelegram()" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded font-bold text-xs transition">
-                <i class="fab fa-telegram-plane mr-2"></i> OBJETO TELEGRAM
-             </button>
+        <div class="flex items-center space-x-4">
+            <button onclick="document.getElementById('file-upload').click()" class="bg-sky-600 hover:bg-sky-500 px-4 py-2 rounded text-xs font-black transition">
+                <i class="fas fa-upload mr-2"></i> ANALISAR ARQUIVO .BYTES
+            </button>
+            <input type="file" id="file-upload" class="hidden" accept=".bytes">
         </div>
-    </header>
+    </nav>
 
     <main class="flex-1 flex overflow-hidden">
-        <aside class="w-60 bg-slate-950 border-r border-slate-800 p-4 overflow-y-auto">
-            <h2 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-4">Categorias Reais</h2>
-            <div id="category-menu" class="space-y-1">
-                <!-- Injected -->
+        <aside class="w-64 bg-slate-950 border-r border-slate-800 flex flex-col p-6 overflow-y-auto">
+            <h2 class="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-6">Estruturas Detectadas</h2>
+            <div id="graphs-list" class="space-y-2">
+                <!-- Graphs will appear here -->
+                <p class="text-[10px] text-slate-700 italic">Nenhum arquivo carregado...</p>
             </div>
         </aside>
 
-        <section class="flex-1 bg-slate-900/50 p-8 overflow-y-auto" id="workspace">
-            <div id="blocks-display" class="flex flex-wrap items-start content-start gap-4">
-                <!-- Injected -->
+        <section class="flex-1 relative bg-slate-900/30 overflow-auto p-12" id="canvas">
+            <div id="welcome-screen" class="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-20">
+                <i class="fas fa-microchip text-8xl"></i>
+                <div>
+                    <h3 class="text-2xl font-black">Pronto para Analisar</h3>
+                    <p class="text-sm">Carregue um Slot de dados para ver os códigos de construção.</p>
+                </div>
+            </div>
+            <div id="blocks-workspace" class="block-container hidden">
+                <!-- Blocks rendered here -->
             </div>
         </section>
+
+        <aside id="details-panel" class="w-96 bg-slate-950 border-l border-slate-800 flex flex-col transform transition-transform duration-300">
+            <div class="p-6 border-b border-slate-800">
+                <h3 class="text-xs font-black uppercase text-sky-400">Inspeção de Bloco</h3>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6 space-y-8" id="details-content">
+                 <p class="text-xs text-slate-600">Selecione um bloco no canvas para ver sua serialização real.</p>
+            </div>
+        </aside>
     </main>
 
-    <!-- Modal Técnico -->
-    <div id="tech-modal" class="fixed inset-0 bg-black/90 backdrop-blur flex items-center justify-center z-[100] hidden p-6">
-        <div class="bg-slate-900 border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div id="modal-head" class="p-6 flex justify-between items-center border-b border-slate-800">
-                <div>
-                    <span id="m-cat" class="text-[10px] font-bold px-2 py-1 rounded bg-black/30 mb-2 inline-block"></span>
-                    <h3 id="m-title" class="text-2xl font-black text-white"></h3>
-                </div>
-                <button onclick="closeModal()" class="text-slate-500 hover:text-white"><i class="fas fa-times text-xl"></i></button>
-            </div>
-            <div class="p-6 overflow-y-auto space-y-6">
-                <div>
-                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Funcionamento Visual</h4>
-                    <p id="m-desc" class="text-slate-300"></p>
-                </div>
-                <div>
-                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Código Real (Binary/Protobuf Data)</h4>
-                    <div class="bg-black rounded-lg p-4 font-mono text-xs text-green-400 border border-slate-800 whitespace-pre overflow-x-auto" id="m-code">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
-        const blocks = {
-            "Evento": [
-                { name: "OnAwake", desc: "Inicializa o script.", code: "typeName: OnAwake\nid: 'FC_765cb713-d41d-4eb7-8a7c-68e63d45c'\nEnabled: true\nbodies: [ ... ]" },
-                { name: "OnMatchStart", desc: "Início da partida.", code: "typeName: OnMatchStart\nid: 'FC_abe971e2-f0a0-4483-abfc-fe53e33ddfda'\nEnabled: true\nbodies: [ ... ]" },
-                { name: "OnPlayerDead", desc: "Morte de jogador.", code: "typeName: OnPlayerDead\nid: 'FC_...'\nEnabled: true\nbodies: [ ... ]" }
-            ],
-            "Ação": [
-                { name: "AddItemToCharacter", desc: "Dá item ao jogador.", code: "typeName: AddItemToCharacter\nid: 'FC_c60acb7f-888d-49ce-aeaf-15e86d73041d'\nvalues: [\n  { type: Player, value: GetLocalVar },\n  { type: ItemID, value: ... }\n]" },
-                { name: "SetEntityProperty", desc: "Altera status.", code: "typeName: SetEntityProperty\nid: 'FC_e8f2dcf4-d6e6-4d65-9163-33ce32e607f5'\nvalues: [ Target, PropName, Value ]" }
-            ],
-            "Lógica": [
-                { name: "If", desc: "Bloco de decisão real com suporte a Else.", code: "typeName: If\nid: 'FC_d2734ae8-ccbd-4cf5-91e4-0a90e0d4438d'\nbodies: 2 (Then, Else)\nvalues: [ Condition ]", shape: "control" },
-                { name: "While", desc: "Loop de repetição.", code: "typeName: While\nid: 'FC_e1af4c35-9a42-47aa-ab41-e20831fe7498'\nbodies: 1 (Loop)\nvalues: [ Condition ]", shape: "control" },
-                { name: "Comparer", desc: "Comparação lógica.", code: "typeName: Comparer\nid: 'FC_...'\nvalues: [ A, Operator, B ]", shape: "cond" }
-            ],
-            "Dados": [
-                { name: "ThisEntity", desc: "Referência ao objeto.", code: "typeName: ThisEntity\nid: 'FC_1b57e193-bb...'", shape: "data" },
-                { name: "GetLocalVar", desc: "Pega variável.", code: "typeName: GetLocalVar\nid: 'FC_f103560e-9...'", shape: "data" }
-            ]
+        const state = {
+            graphs: []
         };
 
-        const cats = Object.keys(blocks);
-        const colors = { Evento: "evento", Ação: "acao", Lógica: "logica", Dados: "dados" };
-        const icons = { Evento: "bolt", Ação: "play", Lógica: "code-branch", Dados: "database" };
+        document.getElementById('file-upload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
 
-        function init() {
-            const menu = document.getElementById('category-menu');
-            cats.forEach(c => {
-                const btn = document.createElement('button');
-                btn.className = `sidebar-item w-full text-left px-3 py-2 rounded text-xs font-bold text-slate-400 hover:text-white transition flex items-center space-x-2`;
-                btn.innerHTML = `<i class="fas fa-${icons[c]} w-4"></i> <span>${c}</span>`;
-                btn.onclick = () => render(c);
-                menu.appendChild(btn);
-            });
-            render('Lógica');
-        }
+            const buffer = await file.arrayBuffer();
+            const data = new Uint8Array(buffer);
 
-        function render(cat) {
-            const display = document.getElementById('blocks-display');
-            display.innerHTML = '';
-
-            blocks[cat].forEach(b => {
-                const el = document.createElement('div');
-                let classes = `block-base bg-${colors[cat]} `;
-
-                if (cat === 'Evento') classes += 'shape-event has-notch-bottom';
-                else if (cat === 'Ação') classes += 'shape-standard has-notch-top has-notch-bottom';
-                else if (cat === 'Dados') classes += 'shape-data';
-                else if (cat === 'Lógica') {
-                    if (b.shape === 'control') classes += 'shape-control has-notch-top has-notch-bottom';
-                    else classes += 'shape-logic-cond';
+            // Craftland Logic: GZIP starts at offset 6 or find 1F 8B
+            let decompressed;
+            try {
+                let start = 0;
+                for(let i=0; i<data.length-1; i++) {
+                    if(data[i] === 0x1F && data[i+1] === 0x8B) { start = i; break; }
                 }
+                decompressed = pako.inflate(data.slice(start));
+            } catch(err) {
+                console.error("GZIP failed, trying raw", err);
+                decompressed = data;
+            }
 
-                el.className = classes;
-                el.innerHTML = `
-                    ${b.shape === 'control' ? '<div class="mouth"></div>' : ''}
-                    <i class="fas fa-${icons[cat]} mr-2 opacity-30"></i>
-                    <span>${b.name}</span>
-                `;
-                el.onclick = () => showTech(cat, b);
-                display.appendChild(el);
+            analyze(decompressed);
+        });
+
+        function analyze(data) {
+            const text = new TextDecoder().decode(data);
+            const foundGraphs = [];
+
+            // Simplified regex for identifying blocks and IDs
+            const graphRegex = /id\x02'GR_([a-f0-9-]+)/g;
+            let match;
+
+            while ((match = graphRegex.exec(text)) !== null) {
+                const graphId = match[1];
+                const graph = { id: graphId, blocks: [] };
+
+                // Find blocks belonging to this graph (very rough estimation)
+                const startPos = match.index;
+                const nextMatch = graphRegex.exec(text);
+                const endPos = nextMatch ? nextMatch.index : text.length;
+                if(nextMatch) graphRegex.lastIndex = nextMatch.index; // Reset for next iteration
+
+                const blockRegex = /typeName\x02(.)/g;
+                blockRegex.lastIndex = startPos;
+
+                let bMatch;
+                while((bMatch = blockRegex.exec(text)) !== null && bMatch.index < endPos) {
+                    const len = bMatch[1].charCodeAt(0);
+                    const name = text.substr(bMatch.index + 10, len); // Rough skip
+
+                    // Look for ID
+                    const idPart = text.substr(bMatch.index, 200);
+                    const idMatch = /id\x02'FC_([a-f0-9-]+)/.exec(idPart);
+
+                    graph.blocks.push({
+                        type: name.replace(/[^a-zA-Z]/g, ''),
+                        id: idMatch ? idMatch[1] : 'unknown',
+                        raw: `typeName: ${name}\nid: FC_${idMatch ? idMatch[1] : '?'}\nData: ...`
+                    });
+                }
+                foundGraphs.push(graph);
+            }
+
+            state.graphs = foundGraphs;
+            renderGraphsList();
+        }
+
+        function renderGraphsList() {
+            const list = document.getElementById('graphs-list');
+            list.innerHTML = '';
+            state.graphs.forEach((g, i) => {
+                const div = document.createElement('div');
+                div.className = 'p-3 rounded bg-slate-900 border border-slate-800 hover:border-sky-500 cursor-pointer transition mb-2';
+                div.innerHTML = `<p class="text-[10px] font-bold text-slate-300">Grafo ${i+1}</p><p class="text-[8px] text-slate-600 truncate">${g.id}</p>`;
+                div.onclick = () => renderWorkspace(g);
+                list.appendChild(div);
+            });
+            if(state.graphs.length > 0) renderWorkspace(state.graphs[0]);
+        }
+
+        function renderWorkspace(graph) {
+            document.getElementById('welcome-screen').classList.add('hidden');
+            const ws = document.getElementById('blocks-workspace');
+            ws.classList.remove('hidden');
+            ws.innerHTML = '';
+
+            graph.blocks.forEach(b => {
+                const el = document.createElement('div');
+                const cat = categorize(b.type);
+                el.className = `block executable b-${cat} ${b.type === 'If' ? 'block-c' : ''}`;
+                el.innerHTML = `<span>${b.type}</span>${b.type === 'If' ? '<div class="mouth"></div>' : ''}`;
+                el.onclick = () => showDetails(b);
+                ws.appendChild(el);
             });
         }
 
-        function showTech(cat, b) {
-            document.getElementById('m-title').textContent = b.name;
-            document.getElementById('m-cat').textContent = cat;
-            document.getElementById('m-desc').textContent = b.desc;
-            document.getElementById('m-code').textContent = b.code;
-            document.getElementById('tech-modal').classList.remove('hidden');
+        function categorize(type) {
+            if(type.startsWith('On')) return 'event';
+            if(['If', 'While', 'ForEach', 'Comparer'].includes(type)) return 'logic';
+            if(['GetLocalVar', 'DefLocalVar'].includes(type)) return 'var';
+            return 'action';
         }
 
-        function closeModal() {
-            document.getElementById('tech-modal').classList.add('hidden');
+        function showDetails(b) {
+            const content = document.getElementById('details-content');
+            content.innerHTML = `
+                <div class="space-y-4">
+                    <h4 class="text-2xl font-black text-white">${b.type}</h4>
+                    <div class="bg-black p-4 rounded border border-slate-800 font-mono text-[10px] text-green-400 whitespace-pre">
+${b.raw}
+                    </div>
+                </div>
+            `;
         }
-
-        function showTelegram() {
-            showTech('Objeto', {
-                name: 'telegram (Cubo)',
-                desc: 'Objeto de mapa com script vinculado.',
-                code: 'ObjectID: 1771757735001\nType: BasicScalableItem\nTexture: Bricks\nGraphID: GR_76b56b2e-d429-4828-9d67-1323c4ae93e0\n\nSTRUCTURE:\n- OnMatchStart\n  - SetEntityProperty\n  - PauseGame\n  - If (Condition)\n     - [Internal Actions]'
-            });
-        }
-
-        init();
     </script>
 </body>
 </html>
