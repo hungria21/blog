@@ -3,12 +3,12 @@
 Este guia descreve como montar a lógica de blocos para uma arena de 50x50 onde dois jogadores lutam e, se um deles morrer 4 vezes, ele é substituído por um jogador da fila.
 
 ## 1. Variáveis Necessárias (Escopo de Script)
-Crie as seguintes variáveis na categoria **Variáveis**:
-*   `Lutador1`: (Tipo: Jogador) - Referência ao primeiro duelista.
-*   `Lutador2`: (Tipo: Jogador) - Referência ao segundo duelista.
-*   `Mortes1`: (Tipo: Número) - Contador de mortes do Lutador 1.
-*   `Mortes2`: (Tipo: Número) - Contador de mortes do Lutador 2.
-*   `FilaEspera`: (Tipo: Lista de Jogadores) - Jogadores aguardando a vez.
+Crie as seguintes variáveis na categoria **Variáveis**, utilizando os tipos exatos do editor:
+*   `Lutador1`: (Tipo: **Qualquer tipo**) - Referência ao primeiro duelista (entidade jogador).
+*   `Lutador2`: (Tipo: **Qualquer tipo**) - Referência ao segundo duelista (entidade jogador).
+*   `Mortes1`: (Tipo: **Inteiro**) - Contador de mortes do Lutador 1.
+*   `Mortes2`: (Tipo: **Inteiro**) - Contador de mortes do Lutador 2.
+*   `FilaEspera`: (Tipo: **Modelo de lista <Qualquer tipo>**) - Lista de jogadores aguardando a vez.
 
 ## 2. Lógica de Inicialização
 **Evento:** `Ao Iniciar Partida` (ou um gatilho de início).

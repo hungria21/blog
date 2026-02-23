@@ -31,7 +31,16 @@ Estes blocos controlam o fluxo de execução através de condições e loops. O 
 *   **Para cada (ForEach):** Itera sobre uma lista de elementos (ex: todos os jogadores).
 
 ### D. Variáveis e Dados
-Utilizados para armazenar e manipular informações. Existem três escopos principais:
+Utilizados para armazenar e manipular informações. Os tipos de dados disponíveis na categoria de variáveis são:
+*   **Bool:** Valores booleanos (Verdadeiro/Falso).
+*   **Inteiro:** Números inteiros (usados para contadores, IDs).
+*   **Flutuante:** Números decimais.
+*   **Cadeia:** Textos/Strings.
+*   **Modelo de lista <qualquer tipo>:** Listas dinâmicas de elementos.
+*   **Qualquer tipo:** Tipo genérico, frequentemente usado para referenciar Entidades/Jogadores.
+*   **Vetor 3 / Vetor 2:** Coordenadas espaciais (X, Y, Z).
+
+Existem três escopos principais:
 1.  **Atributos Globais de Entidade:** Acessíveis por qualquer script através de "Obter Entidade Global" ou "Definir Entidade Global".
 2.  **Variáveis de Script:** Locais ao script atual, mas podem ser referenciadas externamente.
 3.  **Variáveis Locais:** Válidas apenas dentro de um bloco de código específico (ex: dentro de um loop).
