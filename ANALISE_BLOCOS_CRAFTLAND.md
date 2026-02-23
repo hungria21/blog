@@ -1,60 +1,54 @@
-# Análise dos Blocos de Script - Free Fire Craftland
+# Análise Detalhada dos Blocos de Script - Free Fire Craftland
 
-Esta documentação fornece uma análise detalhada do funcionamento dos scripts de bloco no Free Fire Craftland, baseada na documentação oficial e pesquisa técnica.
+Esta documentação fornece uma visão técnica e estruturada do sistema de scripting visual do Free Fire Craftland, baseada no guia oficial de instruções (`instrucoes_blocos_craftland.json`).
 
-## 1. Conceito Geral
-O **Script de Bloco** é um método de programação visual (estilo *block-based programming*) que permite aos criadores desenvolver lógicas de jogo personalizadas sem a necessidade de escrever código textual complexo. É a ferramenta principal para criar modos de jogo únicos, como o efeito de "cabeça grande", sistemas de economia, regras de combate customizadas, entre outros.
+## 1. Categorias de Blocos
+O sistema é organizado em categorias lógicas, cada uma com propósitos específicos:
 
-## 2. Interface do Editor
-O editor de scripts de bloco é dividido em quatro áreas principais:
+### A. Evento (Red - "Hat" Blocks)
+Estes blocos iniciam a execução. São classificados em:
+*   **Global:** Eventos que afetam o jogo como um todo (ex: "Quando o jogo começa", "Quando o jogador entra no jogo").
+*   **Privado:** Eventos específicos de um jogador ou entidade (ex: "Quando o jogador é eliminado", "Quando o jogador causa dano").
+*   **Área:** Gatilhos baseados em posicionamento espacial (ex: "Quando o jogador entra na área").
 
-*   **Painel de Categorias (Esquerda):** Onde os blocos estão organizados por função (Eventos, Ações, Lógica, Variáveis, Funções).
-*   **Tela/Canvas (Centro):** A área principal de trabalho onde os blocos são arrastados, soltos e conectados.
-*   **Painel de Arquivos:** Mostra o arquivo que está sendo editado no momento (geralmente scripts `.fcg`).
-*   **Painel de Operações/Propriedades (Baixo/Direita):** Aparece ao selecionar um bloco, permitindo deletar, copiar ou configurar parâmetros específicos.
+### B. Ação (Comandos)
+Blocos que executam tarefas ativas, divididos em:
+*   **IA:** Controle de bots ("Controle de IA").
+*   **Lógica:** Comandos de tempo e fluxo externo ("Esperar", "Executar script").
+*   **Combate:** Manipulação de saúde e dano ("Dar dano", "Curar", "Definir HP Máximo").
+*   **Interface (UI):** Comunicação visual com o jogador ("Exibir dica de texto", "Enviar mensagem de chat").
+*   **Inventário:** Gerenciamento de itens e armas.
 
-## 3. Categorias e Tipos de Blocos
-Os blocos possuem cores e formatos específicos que indicam sua função e como podem ser conectados:
+### C. Dados (Valores e Operações)
+Utilizados para fornecer informações aos blocos de ação ou lógica:
+*   **Básico:** Constantes como Número, Cadeia, Vetor3, Bool e referências a Entidades. Inclui também o "Comparador" (==, !=, >, etc.) e "Operador Lógico" (e, ou).
+*   **Matemática:** Operações aritméticas e funções como Raiz Quadrada e Número Aleatório.
+*   **Lista:** Operações de coleção (Adicionar à lista, Obter da lista, Tamanho da lista).
+*   **Textos (Cadeia):** Manipulação de strings.
+*   **Vetor:** Cálculos espaciais (Distância, Normalizar).
 
-### A. Eventos (Vermelho - Formato "Hat")
-Os blocos de evento são os gatilhos (triggers) que iniciam a execução da lógica. Eles possuem o topo arredondado, indicando que são o ponto inicial e nada pode ser conectado acima deles.
-*   **Exemplos:** "Ao iniciar a rodada", "Quando um jogador entra no jogo", "Quando um jogador sofre dano".
+### D. Lógica (Controle de Fluxo - "C-Blocks")
+Controlam como e quando as ações são executadas:
+*   **Se (If) / Se / caso/ou (If/Else):** Tomada de decisão.
+*   **Ciclo condicional (While):** Repetição baseada em condição.
+*   **Ciclo do alcance (For Range):** Repetição baseada em contador.
+*   **Ciclo de todos os elementos (For Each):** Iteração sobre listas (o antigo "para cada" ou "percorrer").
+*   **Quebrar ciclo (Break) / Continue para o próximo:** Controle interno de loops.
 
-### B. Ações (Verde/Azul - Formato "Stack")
-As ações são as instruções que executam comandos no jogo. Elas possuem encaixes superiores e inferiores para permitir o sequenciamento.
-*   **Exemplos:** "Teleportar jogador", "Dar item", "Alterar velocidade de movimento", "Exibir mensagem HUD".
+### E. Variável
+*   **Variável temporária:** Escopo local à execução atual.
+*   **Definir/Obter variável:** Gerenciamento de estado.
+*   **Tipos Suportados:** Bool, Inteiro, Flutuante, Cadeia, Vetor2, Vetor3, Lista, Qualquer tipo.
 
-### C. Lógica e Fluxo (Amarelo/Laranja - Formato "C-Block")
-Estes blocos controlam o fluxo de execução através de condições e loops. O formato em "C" permite "abraçar" outros blocos que serão executados se a condição for atendida.
-*   **Se (If):** Executa os blocos internos se uma condição for verdadeira.
-*   **Enquanto (While):** Repete os blocos internos enquanto a condição for verdadeira.
-*   **Percorrer / Para cada (ForEach):** Itera sobre uma lista de elementos (ex: todos os jogadores). No editor, pode aparecer como "Percorrer" ou "Para cada um".
-*   **Pular (Continue):** Pula para a próxima iteração do loop atual.
-*   **Interromper (Break):** Para a execução do loop imediatamente.
+### F. Função
+Permite modularização ("Definir função", "Chamar função", "Voltar com valor").
 
-### D. Variáveis e Dados
-Utilizados para armazenar e manipular informações. Os tipos de dados disponíveis na categoria de variáveis são:
-*   **Bool:** Valores booleanos (Verdadeiro/Falso).
-*   **Inteiro:** Números inteiros (usados para contadores, IDs).
-*   **Flutuante:** Números decimais.
-*   **Cadeia:** Textos/Strings.
-*   **Modelo de lista <qualquer tipo>:** Listas dinâmicas de elementos.
-*   **Qualquer tipo:** Tipo genérico, frequentemente usado para referenciar Entidades/Jogadores.
-*   **Vetor 3 / Vetor 2:** Coordenadas espaciais (X, Y, Z).
+## 2. Tipos de Arquivos
+*   `.fcg`: Script de bloco.
+*   `.fcc`: Bibliotecas padrão (Standard Libraries).
 
-Existem três escopos principais:
-1.  **Atributos Globais de Entidade:** Acessíveis por qualquer script através de "Obter Entidade Global" ou "Definir Entidade Global".
-2.  **Variáveis de Script:** Locais ao script atual, mas podem ser referenciadas externamente.
-3.  **Variáveis Locais:** Válidas apenas dentro de um bloco de código específico (ex: dentro de um loop).
-
-## 4. Conectividade e Fluxo de Execução
-*   **Ordem de Execução:** Por padrão, a execução ocorre de cima para baixo seguindo as conexões.
-*   **Encaixe de Parâmetros:** Campos de entrada nos blocos (parâmetros) aceitam blocos de valor (expressões) que têm formatos arredondados ou hexagonais (booleanos).
-*   **Separação de Contexto:** Scripts de Servidor e Scripts de Cliente operam em ambientes diferentes. O Servidor lida com a lógica de jogo e estado, enquanto o Cliente lida com UI e efeitos locais. Eles se comunicam via **Eventos**.
-
-## 5. Arquivos Técnicos
-*   `.fcg`: Extensão dos arquivos de script de bloco.
-*   `.fcc`: Extensão das bibliotecas (Standard Libraries) que contêm as definições dos blocos disponíveis.
-
----
-*Análise produzida com base no guia oficial do Free Fire Craftland (2025).*
+## 3. Fluxo Técnico
+1.  **Gatilho:** Um `Evento` é disparado por uma ação no jogo ou tempo.
+2.  **Verificação:** Blocos de `Lógica` (Se) filtram se a ação deve ocorrer.
+3.  **Execução:** Blocos de `Ação` alteram o estado do mundo, jogador ou interface.
+4.  **Processamento:** Blocos de `Dados` e `Variáveis` fornecem os parâmetros necessários para as ações.

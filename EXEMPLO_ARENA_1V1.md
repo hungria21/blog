@@ -1,58 +1,53 @@
-# Exemplo de Script de Bloco: Arena 1v1 com Fila de Espera
+# Exemplo de Script: Arena 1v1 com Substituição de Jogador
 
-Este guia descreve como montar a lógica de blocos para uma arena de 50x50 onde dois jogadores lutam e, se um deles morrer 4 vezes, ele é substituído por um jogador da fila.
+Este exemplo utiliza os nomes exatos dos blocos conforme definidos no `instrucoes_blocos_craftland.json`.
 
-## 1. Variáveis Necessárias (Escopo de Script)
-Crie as seguintes variáveis na categoria **Variáveis**, utilizando os tipos exatos do editor:
-*   `Lutador1`: (Tipo: **Qualquer tipo**) - Referência ao primeiro duelista (entidade jogador).
-*   `Lutador2`: (Tipo: **Qualquer tipo**) - Referência ao segundo duelista (entidade jogador).
+## 1. Configuração de Variáveis
+Vá na categoria **Variável** e crie as seguintes variáveis de script:
+*   `Lutador1`: (Tipo: **Qualquer tipo**) - Primeiro duelista.
+*   `Lutador2`: (Tipo: **Qualquer tipo**) - Segundo duelista.
 *   `Mortes1`: (Tipo: **Inteiro**) - Contador de mortes do Lutador 1.
 *   `Mortes2`: (Tipo: **Inteiro**) - Contador de mortes do Lutador 2.
-*   `FilaEspera`: (Tipo: **Modelo de lista <Qualquer tipo>**) - Lista de jogadores aguardando a vez.
+*   `FilaEspera`: (Tipo: **Lista**) - Lista para armazenar jogadores aguardando.
 
-## 2. Lógica de Inicialização
-**Evento:** `Ao Iniciar Partida` (ou um gatilho de início).
-1.  **Obter todos os jogadores** e salvar em uma lista temporária.
-2.  **Definir Lutador1** como o primeiro jogador da lista.
-3.  **Definir Lutador2** como o segundo jogador da lista.
-4.  **Percorrer (Loop)** jogador restante na lista:
-    *   Adicionar o jogador na `FilaEspera`.
-    *   Teleportar para a "Área de Espera" (fora da arena).
-5.  **Teleportar** `Lutador1` para a Posição A da Arena.
-6.  **Teleportar** `Lutador2` para a Posição B da Arena.
+## 2. Início da Partida (Setup)
+**Evento:** `Quando o jogo começa`
+1.  **Ação:** Obter lista de todos os jogadores (salvar em variável temporária `ListaGeral`).
+2.  **Ação:** `Definir variável` `Lutador1` = Obter índice 0 da `ListaGeral`.
+3.  **Ação:** `Definir variável` `Lutador2` = Obter índice 1 da `ListaGeral`.
+4.  **Lógica:** `Ciclo de todos os elementos (For Each)` (para cada `Jogador` em `ListaGeral` a partir do índice 2):
+    *   **Ação:** `Adicionar à lista` `FilaEspera` (valor: `Jogador`).
+    *   **Ação:** `Teletransportar` `Jogador` para Posição de Espera.
+5.  **Ação:** `Teletransportar` `Lutador1` para Arena Posição A.
+6.  **Ação:** `Teletransportar` `Lutador2` para Arena Posição B.
 
-## 3. Lógica de Substituição (O Coração do Script)
-**Evento:** `Ao Morrer` (Trigger: Jogador que morreu).
+## 3. Controle de Eliminação e Troca
+**Evento:** `Quando o jogador é eliminado` (Parâmetro: `Vítima`)
 
-Use um bloco **Se (If)** para verificar quem morreu:
+### Verificação do Lutador 1
+1.  **Lógica:** `Se (If)` (`Vítima` == `Obter variável` `Lutador1`):
+    *   **Ação:** `Definir variável` `Mortes1` = (`Obter variável` `Mortes1` + 1).
+    *   **Lógica:** `Se (If)` (`Obter variável` `Mortes1` >= 4):
+        *   **Ação:** `Exibir dica de texto` ("Lutador 1 atingiu o limite de mortes e será trocado").
+        *   **Ação:** `Adicionar à lista` `FilaEspera` (valor: `Lutador1`).
+        *   **Ação:** `Teletransportar` `Lutador1` para Posição de Espera.
+        *   **Ação:** `Definir variável` `Lutador1` = `Obter da lista` `FilaEspera` (índice 0).
+        *   **Ação:** `Remover da lista` `FilaEspera` (índice 0).
+        *   **Ação:** `Definir variável` `Mortes1` = 0.
+        *   **Ação:** `Teletransportar` `Lutador1` para Arena Posição A.
+    *   **Senão:**
+        *   **Ação:** `Teletransportar` `Lutador1` para Arena Posição A (Respawn).
 
-### Caso seja o Lutador 1:
-*   **Se** (Jogador que morreu == `Lutador1`):
-    *   **Alterar Variável** `Mortes1` (Aumentar em 1).
-    *   **Se** (`Mortes1` >= 4):
-        *   **Ação:** Teleportar `Lutador1` para a "Área de Espera".
-        *   **Ação:** Adicionar `Lutador1` ao final da `FilaEspera`.
-        *   **Ação:** **Definir Lutador1** como o primeiro elemento da `FilaEspera` (índice 0).
-        *   **Ação:** Remover primeiro elemento da `FilaEspera`.
-        *   **Ação:** Definir `Mortes1` como 0.
-        *   **Ação:** Teleportar o NOVO `Lutador1` para a Posição A da Arena.
-    *   **Senão** (Ainda não morreu 4 vezes):
-        *   **Ação:** Teleportar `Lutador1` de volta para a Posição A (Respawn na arena).
-
-### Caso seja o Lutador 2:
-*   **Se** (Jogador que morreu == `Lutador2`):
-    *   **Alterar Variável** `Mortes2` (Aumentar em 1).
-    *   **Se** (`Mortes2` >= 4):
-        *   **Ação:** Teleportar `Lutador2` para a "Área de Espera".
-        *   **Ação:** Adicionar `Lutador2` ao final da `FilaEspera`.
-        *   **Ação:** **Definir Lutador2** como o primeiro elemento da `FilaEspera` (índice 0).
-        *   **Ação:** Remover primeiro elemento da `FilaEspera`.
-        *   **Ação:** Definir `Mortes2` como 0.
-        *   **Ação:** Teleportar o NOVO `Lutador2` para a Posição B da Arena.
-    *   **Senão** (Ainda não morreu 4 vezes):
-        *   **Ação:** Teleportar `Lutador2` de volta para a Posição B (Respawn na arena).
-
-## 4. Dicas Adicionais
-*   **Área de Arena:** Certifique-se de que as coordenadas da Posição A e B estejam dentro do espaço 50x50 planejado.
-*   **Reset de Itens:** Ao teleportar o novo jogador para a arena, pode ser útil usar a ação "Curar Totalmente" e "Resetar Mochila" (opcional).
-*   **Mensagens:** Use o bloco "Exibir Notificação" para avisar a todos: *"O jogador [Nome] entrou na arena!"*.
+### Verificação do Lutador 2
+2.  **Lógica:** `Se (If)` (`Vítima` == `Obter variável` `Lutador2`):
+    *   **Ação:** `Definir variável` `Mortes2` = (`Obter variável` `Mortes2` + 1).
+    *   **Lógica:** `Se (If)` (`Obter variável` `Mortes2` >= 4):
+        *   **Ação:** `Exibir dica de texto` ("Lutador 2 atingiu o limite de mortes e será trocado").
+        *   **Ação:** `Adicionar à lista` `FilaEspera` (valor: `Lutador2`).
+        *   **Ação:** `Teletransportar` `Lutador2` para Posição de Espera.
+        *   **Ação:** `Definir variável` `Lutador2` = `Obter da lista` `FilaEspera` (índice 0).
+        *   **Ação:** `Remover da lista` `FilaEspera` (índice 0).
+        *   **Ação:** `Definir variável` `Mortes2` = 0.
+        *   **Ação:** `Teletransportar` `Lutador2` para Arena Posição B.
+    *   **Senão:**
+        *   **Ação:** `Teletransportar` `Lutador2` para Arena Posição B (Respawn).
