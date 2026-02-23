@@ -15,7 +15,7 @@ Crie as seguintes variáveis na categoria **Variáveis**, utilizando os tipos ex
 1.  **Obter todos os jogadores** e salvar em uma lista temporária.
 2.  **Definir Lutador1** como o primeiro jogador da lista.
 3.  **Definir Lutador2** como o segundo jogador da lista.
-4.  **Para cada** jogador restante na lista:
+4.  **Percorrer (Loop)** jogador restante na lista:
     *   Adicionar o jogador na `FilaEspera`.
     *   Teleportar para a "Área de Espera" (fora da arena).
 5.  **Teleportar** `Lutador1` para a Posição A da Arena.

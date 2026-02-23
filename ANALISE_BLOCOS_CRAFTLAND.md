@@ -28,7 +28,9 @@ As ações são as instruções que executam comandos no jogo. Elas possuem enca
 Estes blocos controlam o fluxo de execução através de condições e loops. O formato em "C" permite "abraçar" outros blocos que serão executados se a condição for atendida.
 *   **Se (If):** Executa os blocos internos se uma condição for verdadeira.
 *   **Enquanto (While):** Repete os blocos internos enquanto a condição for verdadeira.
-*   **Para cada (ForEach):** Itera sobre uma lista de elementos (ex: todos os jogadores).
+*   **Percorrer / Para cada (ForEach):** Itera sobre uma lista de elementos (ex: todos os jogadores). No editor, pode aparecer como "Percorrer" ou "Para cada um".
+*   **Pular (Continue):** Pula para a próxima iteração do loop atual.
+*   **Interromper (Break):** Para a execução do loop imediatamente.
 
 ### D. Variáveis e Dados
 Utilizados para armazenar e manipular informações. Os tipos de dados disponíveis na categoria de variáveis são:
