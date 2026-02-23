@@ -1,6 +1,6 @@
 {
   "nome_projeto": "Free Fire Craftland Scripting Blocks",
-  "versao": "1.0",
+  "versao": "1.1",
   "descricao": "Base de conhecimento detalhada sobre os blocos de script visuais do Free Fire Craftland, organizada por categorias originais.",
   "categorias": {
     "Evento": {
@@ -223,6 +223,23 @@
       ]
     }
   },
+  "exemplos_práticos": [
+    {
+      "nome": "Arena X1 com Fila e Substituição",
+      "objetivo": "Criar uma arena 1v1 onde o perdedor é substituído após 4 mortes.",
+      "logica": {
+        "variaveis": ["FilaEspera (Lista)", "Duelista1 (Entidade)", "Duelista2 (Entidade)", "Mortes1 (Inteiro)", "Mortes2 (Inteiro)"],
+        "passos": [
+          "1. No evento 'Quando o jogador entra no jogo', verifique se Duelista1 ou Duelista2 estão vazios para preenchê-los e teletransportá-los para a arena.",
+          "2. Se ambos estiverem ocupados, adicione o novo jogador à 'FilaEspera'.",
+          "3. No evento 'Quando o jogador é eliminado', verifique se a vítima é um dos duelistas.",
+          "4. Incremente o contador de mortes do duelista atingido.",
+          "5. Se o contador chegar a 4, teletransporte-o para fora, adicione-o ao fim da fila e zere seu contador.",
+          "6. Pegue o primeiro jogador da fila (índice 0), atribua à vaga vazia do duelista e teletransporte-o para o spawn de combate."
+        ]
+      }
+    }
+  ],
   "guia_rápido": {
     "criar_função": [
       "1. Vá na categoria 'Função' e use 'Definir função'.",
