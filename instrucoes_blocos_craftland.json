@@ -1,0 +1,235 @@
+{
+  "nome_projeto": "Free Fire Craftland Scripting Blocks",
+  "versao": "1.0",
+  "descricao": "Base de conhecimento detalhada sobre os blocos de script visuais do Free Fire Craftland, organizada por categorias originais.",
+  "categorias": {
+    "Evento": {
+      "descricao": "Blocos do tipo 'Hat' (chapéu) que iniciam a execução de um script quando uma condição específica ocorre.",
+      "blocos": [
+        {
+          "nome": "Quando o jogador entra no jogo",
+          "subcategoria": "Global",
+          "descricao": "Executado quando um novo jogador se conecta ao mapa."
+        },
+        {
+          "nome": "Quando o jogador sai do jogo",
+          "subcategoria": "Global",
+          "descricao": "Executado quando um jogador desconecta."
+        },
+        {
+          "nome": "Quando o jogo começa",
+          "subcategoria": "Global",
+          "descricao": "Executado no início da partida."
+        },
+        {
+          "nome": "Quando a rodada começa",
+          "subcategoria": "Global",
+          "descricao": "Executado no início de cada rodada."
+        },
+        {
+          "nome": "Quando o tempo acaba",
+          "subcategoria": "Global",
+          "descricao": "Executado quando o temporizador da rodada ou partida chega a zero."
+        },
+        {
+          "nome": "Quando o jogador é eliminado",
+          "subcategoria": "Privado",
+          "parametros": ["Vítima", "Atacante", "Arma", "Parte do corpo"],
+          "descricao": "Disparado quando um jogador morre no jogo."
+        },
+        {
+          "nome": "Quando o jogador causa dano",
+          "subcategoria": "Privado",
+          "parametros": ["Atacante", "Vítima", "Dano"],
+          "descricao": "Disparado sempre que um jogador ataca outro com sucesso."
+        },
+        {
+          "nome": "Quando a saúde do jogador muda",
+          "subcategoria": "Privado",
+          "parametros": ["Jogador", "Saúde atual"],
+          "descricao": "Monitora qualquer alteração no HP do jogador."
+        },
+        {
+          "nome": "Quando o jogador usa item",
+          "subcategoria": "Privado",
+          "parametros": ["Jogador", "Item"],
+          "descricao": "Disparado ao consumir ou ativar um item."
+        },
+        {
+          "nome": "Quando o jogador entra na área",
+          "subcategoria": "Área",
+          "parametros": ["Jogador", "Área"],
+          "descricao": "Disparado quando um jogador cruza o limite de uma área definida."
+        }
+      ]
+    },
+    "Ação": {
+      "descricao": "Blocos de comando que executam tarefas específicas, como manipular a interface, combate ou lógica de IA.",
+      "subcategorias": {
+        "IA": [
+          {
+            "nome": "Controle de IA",
+            "parametros": ["Entidade", "Alvo", "Comando"],
+            "descricao": "Define o comportamento de bots (ex: atacar, seguir, parar)."
+          }
+        ],
+        "Lógica": [
+          {
+            "nome": "Esperar",
+            "parametros": ["Segundos"],
+            "descricao": "Pausa a execução do script atual pelo tempo especificado."
+          },
+          {
+            "nome": "Executar script",
+            "parametros": ["Script", "Entidade"],
+            "descricao": "Chama a execução de outro bloco de script."
+          }
+        ],
+        "Combate": [
+          {
+            "nome": "Dar dano",
+            "parametros": ["Alvo", "Quantidade", "Atacante"],
+            "descricao": "Aplica dano direto a um jogador ou entidade."
+          },
+          {
+            "nome": "Curar",
+            "parametros": ["Alvo", "Quantidade"],
+            "descricao": "Restaura a saúde de uma entidade."
+          },
+          {
+            "nome": "Definir HP Máximo",
+            "parametros": ["Entidade", "Valor"],
+            "descricao": "Altera o limite máximo de vida de um jogador."
+          }
+        ],
+        "Interface (UI)": [
+          {
+            "nome": "Exibir dica de texto",
+            "parametros": ["Jogador", "Texto", "Duração"],
+            "descricao": "Mostra uma mensagem temporária no centro da tela."
+          },
+          {
+            "nome": "Enviar mensagem de chat",
+            "parametros": ["Jogador", "Mensagem"],
+            "descricao": "Envia um texto para o canal de chat do jogador."
+          },
+          {
+            "nome": "Mostrar UI personalizada",
+            "parametros": ["Jogador", "ID da UI"],
+            "descricao": "Abre um menu de interface criado previamente."
+          }
+        ],
+        "Inventário": [
+          {
+            "nome": "Adicionar item",
+            "parametros": ["Jogador", "ID do Item", "Quantidade"],
+            "descricao": "Insere um item ou arma no inventário do jogador."
+          },
+          {
+            "nome": "Remover item",
+            "parametros": ["Jogador", "ID do Item", "Quantidade"],
+            "descricao": "Remove itens específicos do inventário."
+          },
+          {
+            "nome": "Limpar inventário",
+            "parametros": ["Jogador"],
+            "descricao": "Remove todos os itens de um jogador."
+          }
+        ]
+      }
+    },
+    "Dados": {
+      "descricao": "Blocos para manipulação de valores, cálculos matemáticos, listas e vetores.",
+      "subcategorias": {
+        "Básico": [
+          { "nome": "Número", "descricao": "Constante numérica." },
+          { "nome": "Cadeia", "descricao": "Constante de texto (String)." },
+          { "nome": "Vetor3", "descricao": "Coordenada 3D (X, Y, Z)." },
+          { "nome": "Lista", "descricao": "Estrutura para armazenar múltiplos valores." },
+          { "nome": "Bool", "valores": ["Verdadeiro", "Falso"], "descricao": "Valor lógico booleano." },
+          { "nome": "Cor", "descricao": "Define uma cor RGBA." },
+          { "nome": "Entidade", "descricao": "Referência a um objeto ou jogador." },
+          { "nome": "NULL", "descricao": "Valor nulo/vazio." },
+          { "nome": "Comparador", "opcoes": ["==", "!=", ">", "<", ">=", "<="], "descricao": "Compara dois valores de entrada." },
+          { "nome": "Operador Lógico", "opcoes": ["e", "ou"], "descricao": "Operações lógicas AND e OR." },
+          { "nome": "NÃO", "descricao": "Inverte um valor booleano (NOT)." },
+          { "nome": "Verificação vazia", "descricao": "Verifica se uma entidade ou objeto é nulo." }
+        ],
+        "Matemática": [
+          { "nome": "Operação", "opcoes": ["+", "-", "*", "/", "%", "^"], "descricao": "Cálculos aritméticos básicos." },
+          { "nome": "Número aleatório", "parametros": ["Mínimo", "Máximo"], "descricao": "Gera um valor randômico entre dois números." },
+          { "nome": "Valor absoluto", "descricao": "Retorna o módulo do número." },
+          { "nome": "Raiz quadrada", "descricao": "Calcula a raiz quadrada de um valor." },
+          { "nome": "Arredondar", "descricao": "Arredonda para o inteiro mais próximo." }
+        ],
+        "Lista": [
+          { "nome": "Adicionar à lista", "descricao": "Insere um elemento no fim da lista." },
+          { "nome": "Remover da lista", "descricao": "Remove por índice ou valor." },
+          { "nome": "Obter da lista", "descricao": "Lê o valor em um índice específico." },
+          { "nome": "Contém na lista", "descricao": "Verifica se um item existe na lista." },
+          { "nome": "Tamanho da lista", "descricao": "Retorna o número de elementos." }
+        ],
+        "Textos (Cadeia)": [
+          { "nome": "Combinar textos", "descricao": "Concatena duas ou mais strings." },
+          { "nome": "Subtexto", "descricao": "Extrai uma parte do texto." },
+          { "nome": "Tamanho do texto", "descricao": "Conta os caracteres." }
+        ],
+        "Vetor (Vector)": [
+          { "nome": "Distância", "descricao": "Calcula a distância entre dois Vetores3." },
+          { "nome": "Normalizar", "descricao": "Converte o vetor para magnitude 1." },
+          { "nome": "Obter componente", "opcoes": ["X", "Y", "Z"], "descricao": "Extrai um eixo individual." }
+        ]
+      }
+    },
+    "Jogo": {
+      "descricao": "Blocos que alteram as regras fundamentais e propriedades do ambiente do jogo.",
+      "blocos": [
+        { "nome": "Vencer rodada", "parametros": ["Equipe/Jogador"], "descricao": "Define imediatamente o vencedor e encerra a rodada." },
+        { "nome": "Definir gravidade", "descricao": "Altera a física do mapa." },
+        { "nome": "Definir tempo da rodada", "descricao": "Ajusta o cronômetro da partida." },
+        { "nome": "Teletransportar", "parametros": ["Entidade", "Destino"], "descricao": "Move um jogador ou objeto para novas coordenadas." },
+        { "nome": "Definir escala", "descricao": "Muda o tamanho físico de uma entidade." },
+        { "nome": "Definir animação", "descricao": "Toca uma animação específica no modelo da entidade." }
+      ]
+    },
+    "Lógica": {
+      "descricao": "Estruturas de controle de fluxo para tomada de decisão e repetição.",
+      "blocos": [
+        { "nome": "Se (If)", "descricao": "Executa o bloco interno se a condição for verdadeira." },
+        { "nome": "Se / caso/ou (If/Else)", "descricao": "Estrutura de decisão com ramificações alternativas." },
+        { "nome": "Ciclo condicional (While)", "descricao": "Repete enquanto a condição for verdadeira." },
+        { "nome": "Ciclo do alcance (For Range)", "parametros": ["Início", "Fim", "Passo"], "descricao": "Loop numérico com incremento definido." },
+        { "nome": "Ciclo de todos os elementos (For Each)", "parametros": ["Lista", "Elemento"], "descricao": "Itera por todos os itens de uma coleção de dados." },
+        { "nome": "Continue para o próximo", "descricao": "Pula para a próxima volta do loop." },
+        { "nome": "Quebrar ciclo (Break)", "descricao": "Interrompe e sai imediatamente do loop." }
+      ]
+    },
+    "Variável": {
+      "descricao": "Gerenciamento de memória e armazenamento de dados no script.",
+      "blocos": [
+        { "nome": "Variável temporária", "escopo": "Local", "descricao": "Armazena um valor que só existe dentro da execução atual do script." },
+        { "nome": "Definir variável", "descricao": "Atribui um novo valor a uma variável existente." },
+        { "nome": "Obter variável", "descricao": "Lê o valor atual de uma variável." }
+      ],
+      "tipos_suportados": ["Bool", "Inteiro", "Flutuante", "Cadeia", "Vetor2", "Vetor3", "Lista", "Qualquer tipo"]
+    },
+    "Função": {
+      "descricao": "Blocos para criação de lógica modular e reutilizável.",
+      "blocos": [
+        { "nome": "Definir função", "descricao": "Cria um novo bloco personalizado com entradas e saídas." },
+        { "nome": "Chamar função", "descricao": "Executa a lógica de uma função definida." },
+        { "nome": "Voltar (Return)", "descricao": "Finaliza a função." },
+        { "nome": "Voltar com valor", "descricao": "Finaliza a função enviando um dado de resposta para quem a chamou." }
+      ]
+    }
+  },
+  "guia_rápido": {
+    "criar_função": [
+      "1. Vá na categoria 'Função' e use 'Definir função'.",
+      "2. Dê um nome à função e adicione parâmetros se necessário (ex: Jogador, Quantidade).",
+      "3. Dentro do bloco da função, arraste as ações que deseja executar.",
+      "4. Se precisar retornar algo, use o bloco 'Voltar com valor'.",
+      "5. Para usar a função em outros eventos, use o bloco 'Chamar função' selecionando o nome criado."
+    ]
+  }
+}
