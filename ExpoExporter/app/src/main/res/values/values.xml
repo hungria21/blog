@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Expo Exporter</string>
+    <string name="select_zip">Selecionar código ZIP (Expo/React Native)</string>
+    <string name="no_file_selected">Nenhum ZIP selecionado.</string>
+    <string name="open_expo_go">Abrir no Expo Go</string>
+    <color name="purple_500">#6200EE</color>
+    <color name="purple_700">#3700B3</color>
+    <color name="teal_200">#03DAC5</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+</resources>
