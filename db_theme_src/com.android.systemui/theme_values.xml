@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Liquid Glass effects -->
+    <color name="qs_control_center_background">#99000000</color>
+    <color name="notification_panel_bg">#4DFFFFFF</color>
+    <color name="status_bar_background_color">#00000000</color>
+    <color name="qs_tile_on_color">#ffff8c00</color>
+</resources>
