@@ -17,9 +17,13 @@ DRIVE_NAMES = ["AnimeZeY - Animes e Desenhos", "AnimeZeY - Filmes e Séries"]
 def build_url(query):
     return BASE_URL + "?" + parse.urlencode(query)
 
-def get_api_data(path, page_index=0):
+def get_api_data(path, page_index=0, page_token=None):
     url = f"{SITE_URL}/{path}"
-    data = json.dumps({"page_index": page_index, "password": ""}).encode("utf-8")
+    payload = {"page_index": page_index, "password": ""}
+    if page_token:
+        payload["page_token"] = page_token
+
+    data = json.dumps(payload).encode("utf-8")
     headers = {
         "Content-Type": "application/json",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -40,9 +44,9 @@ def list_drives():
         xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=True)
     xbmcplugin.endOfDirectory(ADDON_HANDLE)
 
-def list_path(path, page_index=0):
+def list_path(path, page_index=0, page_token=None):
     xbmcplugin.setContent(ADDON_HANDLE, 'videos')
-    result = get_api_data(path, page_index)
+    result = get_api_data(path, page_index, page_token)
     if not result:
         xbmcplugin.endOfDirectory(ADDON_HANDLE, False)
         return
@@ -73,7 +77,12 @@ def list_path(path, page_index=0):
     # Check for next page
     next_page_token = result.get("nextPageToken")
     if next_page_token:
-        url = build_url({"action": "list_path", "path": path, "page_index": page_index + 1})
+        url = build_url({
+            "action": "list_path",
+            "path": path,
+            "page_index": page_index + 1,
+            "page_token": next_page_token
+        })
         li = xbmcgui.ListItem(label=">> Próxima Página")
         xbmcplugin.addDirectoryItem(handle=ADDON_HANDLE, url=url, listitem=li, isFolder=True)
 
@@ -86,7 +95,11 @@ def router(paramstring):
     else:
         action = params.get("action")
         if action == "list_path":
-            list_path(params.get("path"), int(params.get("page_index", 0)))
+            list_path(
+                params.get("path"),
+                int(params.get("page_index", 0)),
+                params.get("page_token")
+            )
         elif action == "play":
             play_video(params.get("video_url"))
 
