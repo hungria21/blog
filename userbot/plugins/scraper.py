@@ -12,20 +12,38 @@ def setup(client):
 
         chat_input = event.pattern_match.group(1)
         if not chat_input:
-            await event.edit("Uso: `.search [ID/Username]`")
+            await event.edit("Uso: .search [ID/Username]")
             return
 
-        await event.edit(f"🔍 Iniciando busca em: {chat_input}")
+        await event.edit(f"Buscando em: {chat_input}")
 
         try:
             entity = await event.client.get_input_entity(chat_input)
         except Exception as e:
-            await event.edit(f"❌ Erro ao encontrar chat: {e}")
+            await event.edit(f"Erro: {e}")
             return
+
+        # Obter contagem total de mensagens com links no servidor
+        try:
+            search_result = await event.client(functions.messages.SearchRequest(
+                peer=entity,
+                q='',
+                filter=types.InputMessagesFilterUrl(),
+                min_date=None,
+                max_date=None,
+                offset_id=0,
+                add_offset=0,
+                limit=1,
+                max_id=0,
+                min_id=0,
+                hash=0
+            ))
+            total_on_server = getattr(search_result, 'count', 0)
+        except Exception:
+            total_on_server = "Indisponível"
 
         url_regex = re.compile(r'(?:t\.me\/|telegram\.me\/)[\w\d\_]+', re.IGNORECASE)
 
-        # Deduplicação
         db_file = "database.txt"
         database = set()
         if os.path.exists(db_file):
@@ -64,42 +82,38 @@ def setup(client):
                 if total_messages % 100 == 0 or len(messages) < limit:
                     try:
                         await event.edit(
-                            f"🔄 Processando...\n"
-                            f"📩 Mensagens lidas: {total_messages}\n"
-                            f"🔗 Links totais: {links_found}\n"
-                            f"✨ Novos links: {len(new_links)}"
+                            f"CANAL: {chat_input}\n"
+                            f"Mensagens: {total_on_server}\n"
+                            f"Processando mensagens: {total_messages}"
                         )
                     except FloodWaitError as e:
                         await asyncio.sleep(e.seconds)
 
-                    await asyncio.sleep(1) # Delay inteligente
+                    await asyncio.sleep(1)
 
                 if len(messages) < limit:
                     break
 
             except FloodWaitError as e:
                 await asyncio.sleep(e.seconds)
-                continue # Retenta a mesma requisição
+                continue
 
         if not new_links:
             await event.edit(
-                f"✅ Busca finalizada!\n"
-                f"📩 Mensagens lidas: {total_messages}\n"
-                f"🔗 Links totais: {links_found}\n"
-                f"✨ Nenhum link novo encontrado."
+                f"Busca finalizada\n"
+                f"CANAL: {chat_input}\n"
+                f"Lidas: {total_messages}\n"
+                f"Novos: 0"
             )
             return
 
-        # Salvar novos links e enviar arquivo
         temp_file = "novos_links.txt"
         with open(temp_file, "w") as f:
             f.write("\n".join(new_links))
 
-        # Atualizar database de forma segura
         mode = "a" if os.path.exists(db_file) else "w"
         with open(db_file, mode) as f:
-            # Verifica se precisa de nova linha se o arquivo já existir e não terminar com uma
-            if mode == "a":
+            if mode == "a" and os.path.getsize(db_file) > 0:
                 with open(db_file, "rb") as rb:
                     rb.seek(-1, 2)
                     if rb.read(1) != b"\n":
@@ -107,16 +121,16 @@ def setup(client):
             f.write("\n".join(new_links) + "\n")
 
         await event.client.send_file(
-            'me', # Envia para Mensagens Salvas
+            'me',
             temp_file,
-            caption=f"📄 {len(new_links)} novos links extraídos de {chat_input}"
+            caption=f"Links: {len(new_links)}\nChat: {chat_input}"
         )
 
         await event.edit(
-            f"✅ Busca finalizada!\n"
-            f"📩 Mensagens lidas: {total_messages}\n"
-            f"🔗 Links totais: {links_found}\n"
-            f"✨ {len(new_links)} novos links enviados para as Mensagens Salvas."
+            f"Busca finalizada\n"
+            f"CANAL: {chat_input}\n"
+            f"Novos: {len(new_links)}\n"
+            f"Arquivo enviado para Mensagens Salvas"
         )
 
         if os.path.exists(temp_file):

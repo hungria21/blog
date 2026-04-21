@@ -3,11 +3,7 @@ import logging
 import asyncio
 import importlib
 from telethon import TelegramClient, events
-
-# Configurações básicas
-API_ID = 1234567  # Substitua pelo seu API_ID
-API_HASH = 'sua_api_hash'  # Substitua pela sua API_HASH
-SESSION_NAME = 'userbot_session'
+from config import API_ID, API_HASH, SESSION_NAME
 
 logging.basicConfig(level=logging.INFO)
 
@@ -15,6 +11,9 @@ client = TelegramClient(SESSION_NAME, API_ID, API_HASH)
 
 def load_plugins():
     plugins_path = os.path.join(os.path.dirname(__file__), 'plugins')
+    if not os.path.exists(plugins_path):
+        return
+
     for filename in os.listdir(plugins_path):
         if filename.endswith('.py') and not filename.startswith('__'):
             module_name = f'plugins.{filename[:-3]}'
@@ -30,6 +29,10 @@ async def main():
     print("Iniciando Userbot...")
     await client.start()
     print("Userbot conectado!")
+
+    # Adiciona o diretório atual ao sys.path para importação correta dos plugins
+    import sys
+    sys.path.append(os.path.dirname(__file__))
 
     load_plugins()
 
