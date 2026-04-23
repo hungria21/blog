@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Kodi Web Remote</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="sidebar">
+    <h2>Kodi</h2>
+    <div class="nav-item active" data-view="movies">Movies</div>
+    <div class="nav-item" data-view="tvshows">TV Shows</div>
+    <div class="nav-item" data-view="music">Music</div>
+    <div class="nav-item" data-view="remote">Remote</div>
+    <div style="flex: 1;"></div>
+    <div class="nav-item" id="open-settings">Settings</div>
+  </div>
+
+  <div class="main-content">
+    <div class="header">
+      <h3 id="view-title">Movies</h3>
+    </div>
+    <div id="content" class="content-area">
+      <!-- Media items will be injected here -->
+    </div>
+    <div id="playback-bar" class="playback-bar" style="display: none;">
+      <div class="now-playing">
+        <img id="np-thumb" class="now-playing-thumb" src="">
+        <div class="now-playing-details">
+          <span id="np-title" class="now-playing-title">Not Playing</span>
+          <span id="np-subtitle" class="now-playing-subtitle"></span>
+        </div>
+      </div>
+      <div class="controls">
+        <button id="btn-prev" class="control-btn">⏮</button>
+        <button id="btn-play" class="control-btn">⏯</button>
+        <button id="btn-stop" class="control-btn">⏹</button>
+        <button id="btn-next" class="control-btn">⏭</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="message" class="message-overlay" style="display: none;">
+    <p id="message-text">Connecting to Kodi...</p>
+  </div>
+
+  <script src="js/kodi-api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
