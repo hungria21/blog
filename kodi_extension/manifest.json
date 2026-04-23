@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Kodi Web Remote",
+  "version": "1.0",
+  "description": "A web-based remote for Kodi, inspired by Chorus2.",
+  "permissions": ["storage"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html"
+}

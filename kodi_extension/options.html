@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kodi Remote Settings</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    body { padding: 20px; font-family: sans-serif; background-color: #121212; color: #e0e0e0; }
+    .container { max-width: 400px; margin: 0 auto; }
+    h1 { font-size: 20px; margin-bottom: 20px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; }
+    input { width: 100%; padding: 8px; box-sizing: border-box; background: #222; border: 1px solid #444; color: #fff; border-radius: 4px; }
+    button { padding: 10px 15px; background: #007bff; border: none; color: white; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .status { margin-top: 10px; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Kodi Connection Settings</h1>
+    <div class="form-group">
+      <label for="host">Kodi IP Address:</label>
+      <input type="text" id="host" placeholder="192.168.1.100">
+    </div>
+    <div class="form-group">
+      <label for="port">Port:</label>
+      <input type="text" id="port" placeholder="8080">
+    </div>
+    <div class="form-group">
+      <label for="username">Username (Optional):</label>
+      <input type="text" id="username">
+    </div>
+    <div class="form-group">
+      <label for="password">Password (Optional):</label>
+      <input type="password" id="password">
+    </div>
+    <button id="save">Save Settings</button>
+    <div id="status" class="status"></div>
+  </div>
+  <script src="js/options.js"></script>
+</body>
+</html>
