@@ -1,6 +1,6 @@
 ~version: "2.1"
 
-# Identificar as páginas de artigos estáticos em qualquer subdiretório (suporte a GitHub Pages com repo name)
+# Identificar as páginas de artigos estáticos em qualquer subdiretório
 ?path: .+/posts/.+\.html
 
 # Definir o corpo do artigo
@@ -11,9 +11,9 @@ title: //h1[1]
 @remove: $title
 
 # Telegram IV não suporta blocos colapsáveis interativos (<details>)
-# Vamos garantir que o conteúdo seja visível transformando o resumo em um cabeçalho
-@wrap(<h3 inner>): $body//details/summary
-@combine(<p>): $body//details/p
+# Vamos extrair o conteúdo do summary e do details para o corpo principal
+@rename(h3): $body//details/summary
+@inline: $body//details
 
 # Ajustar imagens
 image_url: $body//img/@src
@@ -25,7 +25,6 @@ image_url: $body//img/@src
 
 # Metadados básicos para IV
 author: "Moonshot Blog"
-published_date: //span[@class="date"]
 
 # Limpeza final
 @debug: $body
