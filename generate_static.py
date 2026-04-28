@@ -7,15 +7,22 @@ import datetime
 ARTICLES_DIR = 'articles'
 OUTPUT_DIR = 'posts'
 MANIFEST_FILE = 'manifest.json'
-TEMPLATE_FILE = 'article_template.html'
 
-# HTML Template para os artigos estáticos
+# HTML Template para os artigos estáticos com Meta Tags para Instant View
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title} - Moonshot</title>
+
+    <!-- Meta Tags para Telegram Instant View -->
+    <meta property="og:title" content="{title}">
+    <meta property="og:description" content="{description}">
+    <meta property="og:image" content="{image}">
+    <meta property="og:type" content="article">
+    <meta name="twitter:card" content="summary_large_image">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -43,7 +50,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     <nav class="border-b border-zinc-800 p-4 sticky top-0 bg-[#0a0a0a]/80 backdrop-blur-md z-10">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
             <a href="../index.html" class="text-xl font-bold tracking-tighter text-white">MOONSHOT BLOG</a>
-            <a href="../index.html" class="text-zinc-400 hover:text-white transition-colors">Voltar</a>
+            <div class="flex gap-4">
+                 <span class="text-zinc-500 text-xs hidden md:block self-center date">{date}</span>
+                 <a href="../index.html" class="text-zinc-400 hover:text-white transition-colors">Voltar</a>
+            </div>
         </div>
     </nav>
 
@@ -76,13 +86,13 @@ def generate():
         with open(md_path, 'r') as f:
             md_content = f.read()
 
-        # Converter Markdown para HTML
-        # markdown.extensions.extra inclui suporte a tabelas, atributos e HTML bruto
         html_body = markdown.markdown(md_content, extensions=['extra'])
 
-        # Gerar o arquivo final
         final_html = HTML_TEMPLATE.format(
             title=article['title'],
+            description=article.get('description', ''),
+            image=article.get('image', ''),
+            date=article.get('date', ''),
             content=html_body
         )
 
