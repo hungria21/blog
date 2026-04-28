@@ -4,6 +4,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const postSkeleton = document.getElementById('post-skeleton');
     const postError = document.getElementById('post-error');
 
+    // Configure Marked.js for better HTML support
+    if (typeof marked !== 'undefined') {
+        marked.setOptions({
+            headerIds: true,
+            gfm: true,
+            breaks: true,
+            mangle: false
+        });
+    }
+
     // Utility to get URL parameters
     const getQueryParam = (param) => {
         const urlParams = new URLSearchParams(window.location.search);

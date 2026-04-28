@@ -1,5 +1,13 @@
 [
   {
+    "id": "super-powers",
+    "title": "Super Poderes do Blog Moonshot",
+    "description": "Descubra como criar artigos incríveis usando componentes avançados: Callouts, Grids e Menus personalizados.",
+    "image": "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000&auto=format&fit=crop",
+    "date": "2024-05-23",
+    "path": "articles/super-powers.md"
+  },
+  {
     "id": "telegram-features",
     "title": "Dominando as Funcionalidades do Telegram",
     "description": "Explore recursos avançados do Telegram que aumentam sua produtividade e privacidade, utilizando menus expansíveis para uma leitura organizada.",
