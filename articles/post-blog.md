@@ -1,3 +1,11 @@
+---
+title: "Bem-vindo ao Blog Moonshot"
+description: "Uma introdução ao nosso novo espaço para compartilhar conhecimento e ideias sobre IA e tecnologia."
+image: "https://picsum.photos/seed/intro/800/450"
+date: "2024-05-21"
+---
+
+
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;600&display=swap');
 
