@@ -1,5 +1,13 @@
 [
   {
+    "id": "telegram-features",
+    "title": "Dominando as Funcionalidades do Telegram",
+    "description": "Explore recursos avançados do Telegram que aumentam sua produtividade e privacidade, utilizando menus expansíveis para uma leitura organizada.",
+    "image": "https://images.unsplash.com/photo-1611606063065-ee7946f0787a?q=80&w=1000&auto=format&fit=crop",
+    "date": "2024-05-22",
+    "path": "articles/telegram-features.md"
+  },
+  {
     "id": "intro",
     "title": "Bem-vindo ao Blog Moonshot",
     "description": "Uma introdução ao nosso novo espaço para compartilhar conhecimento e ideias sobre IA e tecnologia.",
