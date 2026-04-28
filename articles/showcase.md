@@ -1,3 +1,10 @@
+---
+title: "Showcase Completo de Markdown"
+description: "Este arquivo demonstra todas as funcionalidades disponíveis na sintaxe Markdown, desde títulos até fórmulas matemáticas."
+image: "https://picsum.photos/seed/showcase/800/450"
+date: "2024-05-20"
+---
+
 # Showcase Completo de Markdown
 
 > Este arquivo demonstra **todas** as funcionalidades disponíveis na sintaxe Markdown.

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "intro",
+    "title": "Bem-vindo ao Blog Moonshot",
+    "description": "Uma introdução ao nosso novo espaço para compartilhar conhecimento e ideias sobre IA e tecnologia.",
+    "image": "https://picsum.photos/seed/intro/800/450",
+    "date": "2024-05-21",
+    "path": "articles/intro.md"
+  },
+  {
+    "id": "showcase",
+    "title": "Showcase Completo de Markdown",
+    "description": "Este arquivo demonstra todas as funcionalidades disponíveis na sintaxe Markdown, desde títulos até fórmulas matemáticas.",
+    "image": "https://picsum.photos/seed/showcase/800/450",
+    "date": "2024-05-20",
+    "path": "articles/showcase.md"
+  }
+]
