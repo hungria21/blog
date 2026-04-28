@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch and render articles on index.html
     const loadArticles = async () => {
         try {
-            const response = await fetch('manifest.json');
+            const response = await fetch(`manifest.json?t=${Date.now()}`);
             const articles = await response.json();
 
             if (articlesGrid) {
@@ -51,20 +51,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch and render specific article on post.html
     const loadPost = async () => {
         const id = getQueryParam('id');
-        if (!id) return;
+        if (!id) {
+            console.error('ID do artigo não fornecido na URL');
+            showError();
+            return;
+        }
 
         try {
-            const manifestResponse = await fetch('manifest.json');
+            const manifestResponse = await fetch(`manifest.json?t=${Date.now()}`);
             const manifest = await manifestResponse.json();
             const articleMeta = manifest.find(a => a.id === id);
 
             if (!articleMeta) {
+                console.error(`Artigo com ID "${id}" não encontrado no manifest.json`);
                 showError();
                 return;
             }
 
+            console.log(`Carregando artigo: ${articleMeta.path}`);
             const response = await fetch(articleMeta.path);
-            if (!response.ok) throw new Error('Falha ao carregar o arquivo markdown');
+            if (!response.ok) {
+                console.error(`Erro ao buscar markdown: ${response.status} ${response.statusText}`);
+                throw new Error('Falha ao carregar o arquivo markdown');
+            }
 
             let markdown = await response.text();
 
