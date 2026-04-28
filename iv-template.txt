@@ -1,0 +1,27 @@
+~version: "2.1"
+
+# Identificar as páginas de artigos estáticos
+?path: /posts/.+\.html
+
+# Definir o corpo do artigo
+body: //article[@id="article-content"]
+
+# Definir o título
+title: //h1[1]
+@remove: $title
+
+# Telegram IV não suporta blocos colapsáveis interativos (<details>)
+# Por padrão, vamos transformar o sumário em um cabeçalho para garantir visibilidade
+@wrap(<h3 inner>): $body//details/summary
+@combine(<p>): $body//details/p
+
+# Ajustar imagens
+image_url: $body//img/@src
+
+# Remover elementos desnecessários
+@remove: //nav
+@remove: //footer
+@remove: //script
+
+# Limpeza final
+@debug: $body

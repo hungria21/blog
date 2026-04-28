@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carregando Artigo... - Moonshot</title>
+    <title>Como usar o Texto Expansivo - Moonshot</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="../css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; color: #e5e5e5; }
@@ -31,32 +30,32 @@
 <body class="min-h-screen">
     <nav class="border-b border-zinc-800 p-4 sticky top-0 bg-[#0a0a0a]/80 backdrop-blur-md z-10">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <a href="index.html" class="text-xl font-bold tracking-tighter text-white">MOONSHOT BLOG</a>
-            <a href="index.html" class="text-zinc-400 hover:text-white transition-colors">Voltar</a>
+            <a href="../index.html" class="text-xl font-bold tracking-tighter text-white">MOONSHOT BLOG</a>
+            <a href="../index.html" class="text-zinc-400 hover:text-white transition-colors">Voltar</a>
         </div>
     </nav>
 
     <main class="max-w-3xl mx-auto p-6 py-12">
         <article id="article-content" class="markdown-body">
-            <!-- Conteúdo do Markdown será injetado aqui -->
-            <div class="animate-pulse space-y-4">
-                <div class="h-10 bg-zinc-900 rounded w-3/4 mb-8"></div>
-                <div class="h-4 bg-zinc-900 rounded w-full"></div>
-                <div class="h-4 bg-zinc-900 rounded w-full"></div>
-                <div class="h-4 bg-zinc-900 rounded w-5/6"></div>
-            </div>
+            <h1>Como usar o Texto Expansivo</h1>
+<p>Este é um exemplo de artigo com conteúdo que pode ser expandido.</p>
+<details>
+<summary>Clique para ver mais detalhes</summary>
+
+Este conteúdo está escondido por padrão, mas pode ser revelado pelo usuário.
+No Telegram Instant View, isso aparecerá como um bloco expansível.
+
+- Lista item 1
+- Lista item 2
+
+</details>
+
+<p>O texto continua aqui normalmente.</p>
         </article>
     </main>
 
     <footer class="border-t border-zinc-800 p-8 mt-20 text-center text-zinc-500 text-sm">
         &copy; 2023 Moonshot Blog. Suporte total a Instant View.
     </footer>
-
-    <script src="js/app.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            loadArticleContent();
-        });
-    </script>
 </body>
 </html>
