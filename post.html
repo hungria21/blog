@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carregando artigo... - Moonshot Blog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #ffffff;
+        }
+        /* Markdown Overrides */
+        .prose {
+            color: #d4d4d8;
+            max-width: 65ch;
+        }
+        .prose h1, .prose h2, .prose h3, .prose h4 {
+            color: #ffffff;
+            font-weight: 700;
+            margin-top: 2em;
+            margin-bottom: 1em;
+            letter-spacing: -0.025em;
+        }
+        .prose h1 { font-size: 2.5rem; }
+        .prose h2 { font-size: 1.875rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem; }
+        .prose p { margin-bottom: 1.5em; line-height: 1.75; }
+        .prose ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 1.5em; }
+        .prose ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 1.5em; }
+        .prose li { margin-bottom: 0.5em; }
+        .prose a { color: #ffffff; text-decoration: underline; font-weight: 500; }
+        .prose code {
+            background: #1a1a1a;
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            font-size: 0.875em;
+            color: #e4e4e7;
+        }
+        .prose pre {
+            background: #1a1a1a;
+            padding: 1.5rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .prose pre code { background: transparent; padding: 0; color: #e4e4e7; }
+        .prose blockquote {
+            border-left: 4px solid #3f3f46;
+            padding-left: 1.5rem;
+            font-style: italic;
+            color: #a1a1aa;
+            margin: 2rem 0;
+        }
+        .prose img {
+            border-radius: 16px;
+            margin: 3rem 0;
+            box-shadow: 0 20px 50px -20px rgba(0,0,0,0.5);
+        }
+        .prose table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+        }
+        .prose th, .prose td {
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.75rem;
+            text-align: left;
+        }
+        .prose th { background: #1a1a1a; }
+        .prose hr { border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 3rem 0; }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Navbar -->
+    <nav class="border-b border-white/10 sticky top-0 bg-[#0a0a0a]/80 backdrop-blur-md z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <a href="index.html" class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                        <div class="w-4 h-4 bg-black rounded-sm rotate-45"></div>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight">Moonshot</span>
+                </a>
+                <a href="index.html" class="text-sm font-medium text-zinc-400 hover:text-white transition-colors flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                    Voltar para o Blog
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <article id="post-container" class="max-w-3xl mx-auto px-4 sm:px-6 pt-8 md:pt-12 pb-24 hidden">
+        <!-- Banner Image -->
+        <div class="mb-8 md:mb-12 -mx-4 sm:mx-0">
+            <img id="post-image" src="" alt="" class="w-full aspect-video object-cover sm:rounded-2xl shadow-2xl">
+        </div>
+
+        <!-- Meta -->
+        <div class="flex items-center gap-4 text-zinc-500 text-xs sm:text-sm mb-6">
+            <span id="post-date"></span>
+            <span>•</span>
+            <span id="post-category">Artigo</span>
+        </div>
+
+        <!-- Content -->
+        <div id="post-content" class="prose prose-invert lg:prose-xl max-w-none">
+            <!-- Markdown content will be injected here -->
+        </div>
+    </article>
+
+    <!-- Skeleton -->
+    <div id="post-skeleton" class="max-w-3xl mx-auto px-4 pt-12 pb-24">
+        <div class="w-full aspect-video bg-zinc-900 rounded-2xl animate-pulse mb-12"></div>
+        <div class="h-4 w-32 bg-zinc-900 animate-pulse mb-6"></div>
+        <div class="h-12 w-3/4 bg-zinc-900 animate-pulse mb-8"></div>
+        <div class="space-y-4">
+            <div class="h-4 w-full bg-zinc-900 animate-pulse"></div>
+            <div class="h-4 w-full bg-zinc-900 animate-pulse"></div>
+            <div class="h-4 w-2/3 bg-zinc-900 animate-pulse"></div>
+        </div>
+    </div>
+
+    <!-- Error State -->
+    <div id="post-error" class="max-w-3xl mx-auto px-4 py-32 text-center hidden">
+        <h2 class="text-2xl font-bold mb-4">Ops! Artigo não encontrado.</h2>
+        <p class="text-zinc-400 mb-8">O artigo que você está procurando pode ter sido removido ou o link está incorreto.</p>
+        <a href="index.html" class="bg-white text-black px-6 py-3 rounded-full font-bold">Voltar ao Início</a>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
