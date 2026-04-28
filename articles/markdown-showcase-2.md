@@ -1,3 +1,11 @@
+---
+title: "post"
+description: "Uma introdução ao nosso novo espaço para compartilhar conhecimento e ideias sobre IA e tecnologia."
+image: "https://picsum.photos/seed/intro/800/450"
+date: "2024-05-21"
+---
+
+
 # Showcase Completo de Markdown
 
 > Este arquivo demonstra **todas** as funcionalidades disponíveis na sintaxe Markdown.
