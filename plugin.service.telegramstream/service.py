@@ -2,121 +2,141 @@ import os
 import sys
 import xbmc
 import xbmcaddon
+import xbmcvfs
+import asyncio
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import socket
 import time
 
-# Add resources/lib to sys.path to find bundled dependencies
+# Add resources/lib to sys.path
 addon = xbmcaddon.Addon()
 lib_path = os.path.join(addon.getAddonInfo('path'), 'resources', 'lib')
 sys.path.append(lib_path)
 
 try:
-    import telebot
+    from telethon import TelegramClient, events
 except ImportError:
-    xbmc.log("TelegramStream: telebot not found in " + lib_path, xbmc.LOGERROR)
+    xbmc.log("TelegramStream: Telethon not found in " + lib_path, xbmc.LOGERROR)
+
+# Profile directory for session file
+profile_path = xbmcvfs.translatePath(addon.getAddonInfo('profile'))
+if not os.path.exists(profile_path):
+    os.makedirs(profile_path)
+session_file = os.path.join(profile_path, 'telegram_stream')
+
+class StreamHandler(BaseHTTPRequestHandler):
+    client = None
+    message = None
+    loop = None
+
+    def do_GET(self):
+        if not self.client or not self.message or not self.loop:
+            self.send_error(404)
+            return
+
+        self.send_response(200)
+        self.send_header('Content-Type', 'video/mp4')
+        self.end_headers()
+
+        async def stream_task():
+            async for chunk in self.client.iter_download(self.message.media):
+                self.wfile.write(chunk)
+
+        future = asyncio.run_coroutine_threadsafe(stream_task(), self.loop)
+        try:
+            future.result()
+        except Exception as e:
+            xbmc.log(f"TelegramStream: Streaming error: {str(e)}", xbmc.LOGERROR)
 
 class TelegramService(xbmc.Monitor):
     def __init__(self):
         super(TelegramService, self).__init__()
-        self.player = xbmc.Player()
-        self.bot = None
-        self.token = ""
-        self.authorized_id = 0
+        self.client = None
+        self.loop = asyncio.new_event_loop()
+        self.server = None
+        self.port = self.find_free_port()
+        self.client_thread = None
         self.update_settings()
 
+    def find_free_port(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(('', 0))
+        port = s.getsockname()[1]
+        s.close()
+        return port
+
     def update_settings(self):
-        new_token = addon.getSetting('bot_token')
+        try:
+            self.api_id = int(addon.getSetting('api_id') or 0)
+        except ValueError:
+            self.api_id = 0
+        self.api_hash = addon.getSetting('api_hash')
+        self.bot_token = addon.getSetting('bot_token')
         try:
             self.authorized_id = int(addon.getSetting('authorized_user_id') or 0)
         except ValueError:
             self.authorized_id = 0
 
-        if new_token != self.token:
-            self.token = new_token
-            if self.token:
-                self.bot = telebot.TeleBot(self.token)
-                self.setup_handlers()
-            else:
-                self.bot = None
+        if self.api_id and self.api_hash and self.bot_token:
+            if self.client_thread and self.client_thread.is_alive():
+                self.stop_client()
+            self.client_thread = threading.Thread(target=self.run_loop)
+            self.client_thread.start()
 
-    def is_authorized(self, user_id):
-        if self.authorized_id == 0:
-            xbmc.log(f"TelegramStream: Unauthorized attempt by {user_id}. No authorized_user_id set.", xbmc.LOGWARNING)
-            return False
-        if user_id != self.authorized_id:
-            xbmc.log(f"TelegramStream: Unauthorized attempt by {user_id}. Expected {self.authorized_id}.", xbmc.LOGWARNING)
-            return False
-        return True
+    def run_loop(self):
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_until_complete(self.start_client())
 
-    def setup_handlers(self):
-        @self.bot.message_handler(content_types=['video', 'document'])
-        def handle_video(message):
-            if not self.is_authorized(message.from_user.id):
-                self.bot.reply_to(message, "Você não tem permissão para controlar este Kodi.")
+    async def start_client(self):
+        self.client = TelegramClient(session_file, self.api_id, self.api_hash)
+        StreamHandler.client = self.client
+        StreamHandler.loop = self.loop
+
+        @self.client.on(events.NewMessage)
+        async def handler(event):
+            if self.authorized_id != 0 and event.sender_id != self.authorized_id:
                 return
 
-            file_id = None
-            if message.content_type == 'video':
-                file_id = message.video.file_id
-            elif message.content_type == 'document' and message.document.mime_type.startswith('video/'):
-                file_id = message.document.file_id
+            if event.message.video or (event.message.document and event.message.document.mime_type.startswith('video/')):
+                StreamHandler.message = event.message
+                url = f"http://localhost:{self.port}/play.mp4"
+                xbmc.executebuiltin(f"PlayMedia({url})")
+                await event.reply("Streaming iniciado...")
 
-            if file_id:
-                try:
-                    file_info = self.bot.get_file(file_id)
-                    # Note: Direct API links only work for files < 20MB
-                    file_url = f"https://api.telegram.org/file/bot{self.token}/{file_info.file_path}"
-                    self.play_url(file_url)
-                    self.bot.reply_to(message, "Reproduzindo vídeo no Kodi...")
-                except Exception as e:
-                    xbmc.log(f"TelegramStream: Error getting file: {str(e)}", xbmc.LOGERROR)
+            elif event.message.text:
+                text = event.message.text
+                if text.startswith('http'):
+                    xbmc.executebuiltin(f"PlayMedia({text})")
+                    await event.reply("Reproduzindo link...")
 
-        @self.bot.message_handler(func=lambda message: True)
-        def handle_text(message):
-            if not self.is_authorized(message.from_user.id):
-                self.bot.reply_to(message, "Você não tem permissão para controlar este Kodi.")
-                return
+        await self.client.start(bot_token=self.bot_token)
+        await self.client.run_until_disconnected()
 
-            text = message.text or ""
-            if text.startswith('http://') or text.startswith('https://'):
-                self.play_url(text)
-                self.bot.reply_to(message, "Reproduzindo link no Kodi...")
-            elif text.lower() == '/start' or text.lower() == '/id':
-                self.bot.reply_to(message, f"Seu ID de usuário é: {message.from_user.id}. Configure-o no Kodi.")
+    def start_server(self):
+        self.server = HTTPServer(('localhost', self.port), StreamHandler)
+        t = threading.Thread(target=self.server.serve_forever)
+        t.daemon = True
+        t.start()
 
-    def play_url(self, url):
-        xbmc.log(f"TelegramStream: Attempting to play {url}", xbmc.LOGINFO)
-        self.player.play(url)
+    def stop_client(self):
+        if self.client:
+            self.loop.call_soon_threadsafe(lambda: asyncio.create_task(self.client.disconnect()))
 
     def onSettingsChanged(self):
-        xbmc.log("TelegramStream: Settings changed, updating...", xbmc.LOGINFO)
         self.update_settings()
 
+    def stop(self):
+        if self.server:
+            self.server.shutdown()
+        self.stop_client()
+        self.loop.call_soon_threadsafe(self.loop.stop)
+
 service = TelegramService()
+service.start_server()
 
-def run():
-    xbmc.log("TelegramStream: Service starting", xbmc.LOGINFO)
+while not service.abortRequested():
+    if service.waitForAbort(1):
+        break
 
-    offset = 0
-    while not service.abortRequested():
-        if service.bot:
-            try:
-                updates = service.bot.get_updates(offset=offset, timeout=5)
-                for update in updates:
-                    service.bot.process_new_updates([update])
-                    offset = update.update_id + 1
-            except Exception as e:
-                xbmc.log(f"TelegramStream: Error in bot loop: {str(e)}", xbmc.LOGERROR)
-                time.sleep(5)
-        else:
-            # Check for settings periodically if bot is not configured
-            if service.waitForAbort(10):
-                break
-            continue
-
-        if service.waitForAbort(1):
-            break
-
-    xbmc.log("TelegramStream: Service stopping", xbmc.LOGINFO)
-
-if __name__ == '__main__':
-    run()
+service.stop()

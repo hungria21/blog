@@ -2,7 +2,9 @@
 <settings>
     <section id="plugin.service.telegramstream">
         <category label="General">
-            <setting id="bot_token" type="text" label="Bot Token" default=""/>
+            <setting id="bot_token" type="text" label="Bot Token" default="8315567426:AAGP-44herJLbyj7dJ0hOW9rAfPyVRXgqeU"/>
+            <setting id="api_id" type="text" label="API ID" default=""/>
+            <setting id="api_hash" type="text" label="API Hash" default=""/>
             <setting id="authorized_user_id" type="number" label="Authorized Telegram User ID" default="0"/>
         </category>
     </section>
