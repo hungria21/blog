@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.service.telegramstream" name="Telegram Stream" version="1.2.0" provider-name="Jules">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0"/>
+  </requires>
+  <extension point="xbmc.service" library="service.py" start="startup"/>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_GB">Stream videos from Telegram to Kodi (Telethon)</summary>
+    <description lang="en_GB">Automatically plays videos and links sent to a Telegram bot. Supports commands: /start, /pause, /stream. Uses Telethon to bypass the 20MB limit.</description>
+    <language>en</language>
+    <platform>all</platform>
+    <license>GPL-2.0-or-later</license>
+    <assets>
+      <icon>icon.png</icon>
+      <fanart>fanart.jpg</fanart>
+    </assets>
+  </extension>
+</addon>

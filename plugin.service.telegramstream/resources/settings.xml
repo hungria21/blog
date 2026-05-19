@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings version="1">
+    <category label="General">
+        <group label="Telegram Credentials">
+            <setting id="bot_token" type="string" label="Bot Token">
+                <level>0</level>
+                <default></default>
+                <control type="edit" format="string"/>
+            </setting>
+            <setting id="api_id" type="string" label="API ID">
+                <level>0</level>
+                <default></default>
+                <control type="edit" format="string"/>
+            </setting>
+            <setting id="api_hash" type="string" label="API Hash">
+                <level>0</level>
+                <default></default>
+                <control type="edit" format="string"/>
+            </setting>
+        </group>
+        <group label="Access Control">
+            <setting id="authorized_user_id" type="string" label="Authorized Telegram User ID">
+                <level>0</level>
+                <default>0</default>
+                <control type="edit" format="string"/>
+            </setting>
+        </group>
+    </category>
+</settings>
