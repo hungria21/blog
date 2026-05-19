@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+    <section id="plugin.service.telegramstream">
+        <category label="General">
+            <setting id="bot_token" type="text" label="Bot Token" default=""/>
+            <setting id="authorized_user_id" type="number" label="Authorized Telegram User ID" default="0"/>
+        </category>
+    </section>
+</settings>
