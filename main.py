@@ -1,93 +1,101 @@
+import os
+import asyncio
+import logging
 from telethon import TelegramClient, events
+from telethon.network import ConnectionTcpIntermediate
 import config
 from rich_formatter import parse_rich_message
-import logging
+from layer227 import (
+    InputRichMessageMarkdown,
+    InputBotInlineMessageRichMessage,
+    InputBotInlineResult,
+    SetInlineBotResultsLayer227Request,
+    SendMessageLayer227Request
+)
 
-# Configuração de logs
+# Logging configuration
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-from telethon.network import ConnectionTcpIntermediate
-
+# Initialize client with Pydroid 3 / Android stability settings
 client = TelegramClient(
-    'rich_bot',
+    'rich_bot_session',
     config.API_ID,
     config.API_HASH,
     connection=ConnectionTcpIntermediate,
-    device_model='RichMessageBot',
-    system_version='1.0',
-    proxy=getattr(config, 'PROXY', None)
+    device_model="RichMessageBot v2",
+    system_version="Android 14",
+    app_version="1.0"
 )
 
-@client.on(events.NewMessage(pattern='/start'))
-async def start(event):
-    welcome_text = (
-        "Olá! Eu sou o Bot de Mensagens Ricas.\n\n"
-        "Envie qualquer texto com formatação Markdown e eu responderei com a formatação aplicada.\n"
-        "Também funciono via modo inline: basta digitar `@seu_bot_username texto` em qualquer chat.\n\n"
-        "**Formatos Suportados:**\n"
-        "- `**negrito**`, `*itálico*`, `~~riscado~~`, `__sublinhado__`, `||spoiler||`\n"
-        "- `[link](url)`\n"
-        "- `> Citação` (normal)\n"
-        "- `>> Citação Expandível` (oculta por padrão)\n"
-        "- `$$formula_latex$$` (renderizado via CodeCogs)\n"
-        "- Blocos de código com diagramas:\n"
-        "  ```mermaid\n"
-        "  graph TD; A-->B;\n"
-        "  ```\n"
-        "  (Suporta: mermaid, plantuml, graphviz, etc.)"
-    )
-    # Parse welcome text too
-    clean_text, entities = parse_rich_message(welcome_text)
-    await event.respond(clean_text, formatting_entities=entities)
-
 @client.on(events.NewMessage)
-async def handle_message(event):
-    if event.text.startswith('/'):
-        return
+async def handle_new_message(event):
+    if event.is_private:
+        text = event.text
+        if not text:
+            return
 
-    try:
-        clean_text, entities = parse_rich_message(event.text)
-        await event.respond(clean_text, formatting_entities=entities)
-    except Exception as e:
-        await event.respond(f"Erro ao processar mensagem: {str(e)}")
+        logger.info(f"Received message: {text[:50]}...")
+
+        try:
+            # Try native rich message (Layer 227)
+            rich_md = InputRichMessageMarkdown(markdown=text)
+            await client(SendMessageLayer227Request(
+                peer=await event.get_input_chat(),
+                message="", # Message can be empty when rich_message is present
+                rich_message=rich_md
+            ))
+        except Exception as e:
+            logger.warning(f"Native rich message failed, falling back to entities: {e}")
+            # Fallback to manual entity parsing
+            clean_text, entities = parse_rich_message(text)
+            await event.respond(clean_text, formatting_entities=entities)
 
 @client.on(events.InlineQuery)
-async def handler(event):
-    if not event.text:
+async def handle_inline_query(event):
+    query = event.text
+    if not query:
         return
 
+    logger.info(f"Inline query: {query[:50]}...")
+
     try:
-        clean_text, entities = parse_rich_message(event.text)
+        # Construct native rich result
+        rich_md = InputRichMessageMarkdown(markdown=query)
+        rich_message_content = InputBotInlineMessageRichMessage(rich_message=rich_md)
 
-        # O modo inline requer que enviemos um resultado.
-        # Note: 'formatting_entities' is handled by the builder if we pass it correctly.
-        # But builder.article 'text' usually uses parse_mode.
-        # Telethon's InlineBuilder doesn't have a direct 'formatting_entities' parameter in its helper methods.
-        # We'll use the lower-level types if needed or just use the builder correctly.
-
-        from telethon.tl import types
-        import hashlib
-
-        # Manually construct the result to ensure entities are passed
-        message = types.InputBotInlineMessageText(
-            message=clean_text,
-            entities=entities,
-            no_webpage=False
-        )
-
-        result = types.InputBotInlineResult(
-            id=hashlib.sha256(clean_text.encode()).hexdigest(),
+        result = InputBotInlineResult(
+            id='1',
             type='article',
-            title="Enviar Mensagem Rica",
-            description=clean_text[:50] + "...",
-            send_message=message
+            title='Enviar Mensagem Rica (Nativo)',
+            description=query[:100],
+            send_message=rich_message_content
         )
 
-        await event.answer([result])
+        await client(SetInlineBotResultsLayer227Request(
+            query_id=event.id,
+            results=[result],
+            cache_time=0
+        ))
     except Exception as e:
-        logging.error(f"Erro no modo inline: {e}")
+        logger.error(f"Native inline failed, falling back: {e}")
+        # Fallback to standard entity-based inline (Simplified)
+        clean_text, entities = parse_rich_message(query)
+        builder = event.builder
+        await event.answer([
+            builder.article(
+                'Enviar Mensagem Rica (Fallback)',
+                text=clean_text,
+                formatting_entities=entities,
+                description="Usando modo de compatibilidade"
+            )
+        ], cache_time=0)
+
+async def main():
+    logger.info("Bot is starting...")
+    await client.start(bot_token=config.BOT_TOKEN)
+    logger.info("Bot is online!")
+    await client.run_until_disconnected()
 
 if __name__ == '__main__':
-    print("Bot iniciado...")
-    client.start(bot_token=config.BOT_TOKEN)
-    client.run_until_disconnected()
+    asyncio.run(main())
