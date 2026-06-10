@@ -1,9 +1,9 @@
 from pyrogram import raw
 from pyrogram.raw.core import TLObject
 from pyrogram.raw.core.primitives import Int, Long, String, Vector
+import struct
 
 def to_signed_int(n):
-    import struct
     return struct.unpack('<i', struct.pack('<I', n))[0]
 
 # Implementação manual dos tipos Layer 227 no PyroTGFork
@@ -28,7 +28,7 @@ class InputRichMessageMarkdown(TLObject):
         if self.documents: flags |= (1 << 3)
         if self.users: flags |= (1 << 4)
 
-        b = Int(self.ID, signed=False)
+        b = Int(to_signed_int(self.ID))
         b += Int(flags)
         b += String(self.markdown)
         if self.photos: b += Vector(self.photos)
@@ -89,7 +89,8 @@ class SendMessageLayer227(raw.functions.messages.SendMessage):
         if self.rich_message: flags |= (1 << 23)
         if self.schedule_repeat_period: flags |= (1 << 24)
 
-        b = Int(self.ID, signed=False)
+        # Ordem conforme schema Layer 227
+        b = Int(to_signed_int(self.ID))
         b += Int(flags)
         b += self.peer.write()
         if self.reply_to: b += self.reply_to.write()
@@ -106,3 +107,62 @@ class SendMessageLayer227(raw.functions.messages.SendMessage):
         if self.rich_message: b += self.rich_message.write()
         if self.schedule_repeat_period: b += Int(self.schedule_repeat_period)
         return b
+
+# Stub para evitar ValueError na leitura do resultado (message#7600b9d3)
+class MessageLayer227(TLObject):
+    ID = 0x7600b9d3
+    QUALIFIED_NAME = "raw.types.Message"
+
+    def __init__(self, **kwargs):
+        self.message = ""
+
+    @classmethod
+    def read(cls, b, *args):
+        # Implementação robusta do read para não desincronizar o stream MTProto
+        flags = Int.read(b)
+        flags2 = Int.read(b)
+
+        # Pula campos obrigatórios e condicionais
+        _id = Int.read(b)
+        if flags & (1 << 8): _from_id = TLObject.read(b)
+        if flags & (1 << 29): _from_boosts_applied = Int.read(b)
+        if flags2 & (1 << 12): _from_rank = String.read(b)
+        _peer_id = TLObject.read(b)
+        if flags & (1 << 28): _saved_peer_id = TLObject.read(b)
+        if flags & (1 << 2): _fwd_from = TLObject.read(b)
+        if flags & (1 << 11): _via_bot_id = Long.read(b)
+        if flags2 & (1 << 0): _via_business_bot_id = Long.read(b)
+        if flags2 & (1 << 19): _guestchat_via_from = TLObject.read(b)
+        if flags & (1 << 3): _reply_to = TLObject.read(b)
+        _date = Int.read(b)
+        message_text = String.read(b)
+        if flags & (1 << 9): _media = TLObject.read(b)
+        if flags & (1 << 6): _reply_markup = TLObject.read(b)
+        if flags & (1 << 7): _entities = Vector.read(b)
+        if flags & (1 << 10):
+            _views = Int.read(b)
+            _forwards = Int.read(b)
+        if flags & (1 << 23): _replies = TLObject.read(b)
+        if flags & (1 << 15): _edit_date = Int.read(b)
+        if flags & (1 << 16): _post_author = String.read(b)
+        if flags & (1 << 17): _grouped_id = Long.read(b)
+        if flags & (1 << 20): _reactions = TLObject.read(b)
+        if flags & (1 << 22): _restriction_reason = Vector.read(b)
+        if flags & (1 << 25): _ttl_period = Int.read(b)
+        if flags & (1 << 30): _quick_reply_shortcut_id = Int.read(b)
+        if flags2 & (1 << 2): _effect = Long.read(b)
+        if flags2 & (1 << 3): _factcheck = TLObject.read(b)
+        if flags2 & (1 << 5): _report_delivery_until_date = Int.read(b)
+        if flags2 & (1 << 6): _paid_message_stars = Long.read(b)
+        if flags2 & (1 << 7): _suggested_post = TLObject.read(b)
+        if flags2 & (1 << 10): _schedule_repeat_period = Int.read(b)
+        if flags2 & (1 << 11): _summary_from_language = String.read(b)
+        if flags2 & (1 << 13): _rich_message = TLObject.read(b)
+
+        res = cls()
+        res.message = message_text
+        return res
+
+def register_layer_227_types():
+    from pyrogram.raw.all import objects
+    objects[MessageLayer227.ID] = MessageLayer227
