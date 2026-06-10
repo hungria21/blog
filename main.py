@@ -1,5 +1,4 @@
 from telethon import TelegramClient, events
-from telethon.tl.types import InputBotInlineResultArticle, InputWebDocument
 import config
 from rich_formatter import parse_rich_message
 import logging
@@ -51,13 +50,29 @@ async def handler(event):
         clean_text, entities = parse_rich_message(event.text)
 
         # O modo inline requer que enviemos um resultado.
-        # Usaremos InputBotInlineResultArticle para enviar o texto formatado.
-        result = event.builder.article(
+        # Note: 'formatting_entities' is handled by the builder if we pass it correctly.
+        # But builder.article 'text' usually uses parse_mode.
+        # Telethon's InlineBuilder doesn't have a direct 'formatting_entities' parameter in its helper methods.
+        # We'll use the lower-level types if needed or just use the builder correctly.
+
+        from telethon.tl import types
+        import hashlib
+
+        # Manually construct the result to ensure entities are passed
+        message = types.InputBotInlineMessageText(
+            message=clean_text,
+            entities=entities,
+            no_webpage=False
+        )
+
+        result = types.InputBotInlineResult(
+            id=hashlib.sha256(clean_text.encode()).hexdigest(),
+            type='article',
             title="Enviar Mensagem Rica",
             description=clean_text[:50] + "...",
-            text=clean_text,
-            formatting_entities=entities
+            send_message=message
         )
+
         await event.answer([result])
     except Exception as e:
         logging.error(f"Erro no modo inline: {e}")
