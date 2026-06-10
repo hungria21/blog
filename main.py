@@ -6,7 +6,17 @@ import logging
 # Configuração de logs
 logging.basicConfig(level=logging.INFO)
 
-client = TelegramClient('rich_bot', config.API_ID, config.API_HASH)
+from telethon.network import ConnectionTcpIntermediate
+
+client = TelegramClient(
+    'rich_bot',
+    config.API_ID,
+    config.API_HASH,
+    connection=ConnectionTcpIntermediate,
+    device_model='RichMessageBot',
+    system_version='1.0',
+    proxy=getattr(config, 'PROXY', None)
+)
 
 @client.on(events.NewMessage(pattern='/start'))
 async def start(event):
