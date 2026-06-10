@@ -1,9 +1,9 @@
 from pyrogram import raw
 from pyrogram.raw.core import TLObject
-from pyrogram.raw.core.primitives import Int, Long, String, Vector, Bool
-import struct
+from pyrogram.raw.core.primitives import Int, Long, String, Vector
 
 def to_signed_int(n):
+    import struct
     return struct.unpack('<i', struct.pack('<I', n))[0]
 
 # Implementação manual dos tipos Layer 227 no PyroTGFork
@@ -28,7 +28,7 @@ class InputRichMessageMarkdown(TLObject):
         if self.documents: flags |= (1 << 3)
         if self.users: flags |= (1 << 4)
 
-        b = Int(to_signed_int(self.ID))
+        b = Int(self.ID, signed=False)
         b += Int(flags)
         b += String(self.markdown)
         if self.photos: b += Vector(self.photos)
@@ -89,10 +89,10 @@ class SendMessageLayer227(raw.functions.messages.SendMessage):
         if self.rich_message: flags |= (1 << 23)
         if self.schedule_repeat_period: flags |= (1 << 24)
 
-        b = Int(to_signed_int(self.ID))
+        b = Int(self.ID, signed=False)
         b += Int(flags)
-        if self.reply_to: b += self.reply_to.write()
         b += self.peer.write()
+        if self.reply_to: b += self.reply_to.write()
         b += String(self.message)
         b += Long(self.random_id)
         if self.reply_markup: b += self.reply_markup.write()
