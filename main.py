@@ -1,27 +1,25 @@
 import os
 import random
+import config
 from telethon import TelegramClient, events, functions, types
 from telethon.network import ConnectionTcpIntermediate
 from tl_definitions import InputRichMessageMarkdown, SendMessageLayer227Request, register_layer_227_types
-import config
 
-# Configurações do Bot
-API_ID = config.API_ID
-API_HASH = config.API_HASH
-BOT_TOKEN = config.BOT_TOKEN
-
-# Registrar tipos do Layer 227 para evitar TypeNotFoundError ao ler respostas do servidor
+# Registrar tipos do Layer 227 para evitar TypeNotFoundError
 register_layer_227_types()
 
-# Melhorar estabilidade da conexão para ambientes mobile (Pydroid 3 / Termux)
+# Configurações do Bot
 client = TelegramClient(
     'rich_bot',
-    API_ID,
-    API_HASH,
+    config.API_ID,
+    config.API_HASH,
     connection=ConnectionTcpIntermediate,
     device_model="Android Bot",
     system_version="Layer 227 Manager"
 )
+
+# Definir o layer globalmente no cliente
+client.api_version = 227
 
 @client.on(events.NewMessage(pattern='/start'))
 async def start_handler(event):
@@ -36,31 +34,29 @@ async def start_handler(event):
 
 @client.on(events.NewMessage)
 async def rich_handler(event):
-    if event.message.text.startswith('/'):
+    # Proteção: Se a mensagem recebida já for processada pelo nosso stub vazio
+    # ou se for um comando, ignoramos.
+    if not event.message or not hasattr(event.message, 'text') or event.message.text.startswith('/'):
         return
 
     # Usando o novo request do Layer 227 com rich_message
     rich_msg = InputRichMessageMarkdown(markdown=event.message.text)
 
     try:
-        # Envolvendo o request em InvokeWithLayer para garantir que o servidor entenda o Layer 227
-        # e retorne objetos compatíveis (que registramos no início)
-        await client(functions.InvokeWithLayerRequest(
-            layer=227,
-            query=SendMessageLayer227Request(
-                peer=event.input_chat,
-                message="", # O texto agora vai no rich_message
-                random_id=random.getrandbits(63) - (1 << 63),
-                rich_message=rich_msg
-            )
+        # Enviamos o request diretamente.
+        # O Telethon usará client.api_version para o handshake inicial.
+        await client(SendMessageLayer227Request(
+            peer=event.input_chat,
+            message="", # O conteúdo visual vai no rich_message
+            random_id=random.getrandbits(63) - (1 << 63),
+            rich_message=rich_msg
         ))
     except Exception as e:
-        # Se falhar, tentamos responder normalmente mas informamos o erro
-        print(f"Erro: {e}")
-        await event.reply(f"Ocorreu um erro ao processar a Rich Message: {str(e)}\n\n"
-                          "Certifique-se de que o servidor suporta Layer 227.")
+        print(f"Erro no processamento: {e}")
+        # Falha silenciosa para evitar loop infinito de erros se o stub falhar
+        pass
 
 if __name__ == "__main__":
     print("Bot de Rich Messages iniciado...")
-    client.start(bot_token=BOT_TOKEN)
+    client.start(bot_token=config.BOT_TOKEN)
     client.run_until_disconnected()
