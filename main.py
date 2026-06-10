@@ -1,14 +1,27 @@
 import os
 import random
-from telethon import TelegramClient, events
-from tl_definitions import InputRichMessageMarkdown, SendMessageLayer227Request
+from telethon import TelegramClient, events, functions, types
+from telethon.network import ConnectionTcpIntermediate
+from tl_definitions import InputRichMessageMarkdown, SendMessageLayer227Request, register_layer_227_types
+import config
 
-# Configurações do Bot (Substitua pelos seus valores ou use variáveis de ambiente)
-API_ID = int(os.environ.get('TG_API_ID', '12345'))
-API_HASH = os.environ.get('TG_API_HASH', 'your_api_hash')
-BOT_TOKEN = os.environ.get('TG_BOT_TOKEN', 'your_bot_token')
+# Configurações do Bot
+API_ID = config.API_ID
+API_HASH = config.API_HASH
+BOT_TOKEN = config.BOT_TOKEN
 
-client = TelegramClient('rich_bot', API_ID, API_HASH)
+# Registrar tipos do Layer 227 para evitar TypeNotFoundError ao ler respostas do servidor
+register_layer_227_types()
+
+# Melhorar estabilidade da conexão para ambientes mobile (Pydroid 3 / Termux)
+client = TelegramClient(
+    'rich_bot',
+    API_ID,
+    API_HASH,
+    connection=ConnectionTcpIntermediate,
+    device_model="Android Bot",
+    system_version="Layer 227 Manager"
+)
 
 @client.on(events.NewMessage(pattern='/start'))
 async def start_handler(event):
@@ -30,14 +43,20 @@ async def rich_handler(event):
     rich_msg = InputRichMessageMarkdown(markdown=event.message.text)
 
     try:
-        # Usamos o cliente para enviar o request manual
-        await client(SendMessageLayer227Request(
-            peer=event.input_chat,
-            message="", # O texto agora vai no rich_message
-            random_id=random.getrandbits(63) - (1 << 63), # Garante que cabe em um long assinado de 8 bytes
-            rich_message=rich_msg
+        # Envolvendo o request em InvokeWithLayer para garantir que o servidor entenda o Layer 227
+        # e retorne objetos compatíveis (que registramos no início)
+        await client(functions.InvokeWithLayerRequest(
+            layer=227,
+            query=SendMessageLayer227Request(
+                peer=event.input_chat,
+                message="", # O texto agora vai no rich_message
+                random_id=random.getrandbits(63) - (1 << 63),
+                rich_message=rich_msg
+            )
         ))
     except Exception as e:
+        # Se falhar, tentamos responder normalmente mas informamos o erro
+        print(f"Erro: {e}")
         await event.reply(f"Ocorreu um erro ao processar a Rich Message: {str(e)}\n\n"
                           "Certifique-se de que o servidor suporta Layer 227.")
 

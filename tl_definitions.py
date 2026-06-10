@@ -115,3 +115,19 @@ class SendMessageLayer227Request(TLRequest):
             (self.suggested_post._bytes() if self.suggested_post else b'') +
             (self.rich_message._bytes() if self.rich_message else b'')
         )
+
+# Stub para evitar TypeNotFoundError na leitura do resultado
+class MessageLayer227(TLObject):
+    CONSTRUCTOR_ID = 0x7600b9d3
+    def __init__(self, **kwargs): pass
+    @classmethod
+    def from_reader(cls, reader):
+        return cls()
+
+def register_layer_227_types():
+    # Registra o construtor no mapa do Telethon
+    try:
+        from telethon.tl.alltlobjects import tlobjects
+        tlobjects[MessageLayer227.CONSTRUCTOR_ID] = MessageLayer227
+    except ImportError:
+        pass
