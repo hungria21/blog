@@ -1,62 +1,57 @@
-import os
 import random
+from pyrogram import Client, filters, raw
+from tl_definitions import InputRichMessageMarkdown, SendMessageLayer227
 import config
-from telethon import TelegramClient, events, functions, types
-from telethon.network import ConnectionTcpIntermediate
-from tl_definitions import InputRichMessageMarkdown, SendMessageLayer227Request, register_layer_227_types
 
-# Registrar tipos do Layer 227 para evitar TypeNotFoundError
-register_layer_227_types()
-
-# Configurações do Bot
-client = TelegramClient(
-    'rich_bot',
-    config.API_ID,
-    config.API_HASH,
-    connection=ConnectionTcpIntermediate,
-    device_model="Android Bot",
-    system_version="Layer 227 Manager"
+# Inicializa o cliente PyroTGFork
+app = Client(
+    "rich_bot",
+    api_id=config.API_ID,
+    api_hash=config.API_HASH,
+    bot_token=config.BOT_TOKEN
 )
 
-# Definir o layer globalmente no cliente
-client.api_version = 227
+@app.on_message(filters.command("start") & filters.private)
+async def start(client, message):
+    await message.reply(
+        "Olá! Sou o conversor MTProto Rich Message (Layer 227).\n\n"
+        "Envie qualquer texto Markdown (GFM) e eu converterei nativamente.\n"
+        "Suporta: **Negrito**, *Itálico*, ||Spoilers||, `Code`, Tables e LaTeX ($x^2$)."
+    )
 
-@client.on(events.NewMessage(pattern='/start'))
-async def start_handler(event):
-    await event.reply("Olá! Eu sou o Bot conversor de 'Rich Messages' (Layer 227).\n\n"
-                      "Envie-me qualquer texto com formatação Markdown e eu o enviarei de volta "
-                      "usando o novo sistema nativo do Telegram.\n\n"
-                      "Exemplo:\n"
-                      "# Título\n"
-                      "| Tabela | Coluna |\n"
-                      "| --- | --- |\n"
-                      "| Linha 1 | Dado |")
-
-@client.on(events.NewMessage)
-async def rich_handler(event):
-    # Proteção: Se a mensagem recebida já for processada pelo nosso stub vazio
-    # ou se for um comando, ignoramos.
-    if not event.message or not hasattr(event.message, 'text') or event.message.text.startswith('/'):
+@app.on_message(filters.private & ~filters.command("start"))
+async def handle_rich(client, message):
+    if not message.text:
         return
 
-    # Usando o novo request do Layer 227 com rich_message
-    rich_msg = InputRichMessageMarkdown(markdown=event.message.text)
+    # Converte o texto recebido em um objeto InputRichMessageMarkdown
+    rich_markdown = InputRichMessageMarkdown(markdown=message.text)
+
+    # Resolve o peer
+    peer = await client.resolve_peer(message.chat.id)
 
     try:
-        # Enviamos o request diretamente.
-        # O Telethon usará client.api_version para o handshake inicial.
-        await client(SendMessageLayer227Request(
-            peer=event.input_chat,
-            message="", # O conteúdo visual vai no rich_message
-            random_id=random.getrandbits(63) - (1 << 63),
-            rich_message=rich_msg
-        ))
+        # Envia usando o request customizado para Layer 227
+        # Envolvendo em InvokeWithLayer para garantir o processamento correto pelo servidor
+        await client.invoke(
+            raw.functions.InvokeWithLayer(
+                layer=227,
+                query=SendMessageLayer227(
+                    peer=peer,
+                    message="", # Texto visual vai no rich_message
+                    random_id=random.getrandbits(63) - (1 << 63),
+                    rich_message=rich_markdown
+                )
+            )
+        )
     except Exception as e:
-        print(f"Erro no processamento: {e}")
-        # Falha silenciosa para evitar loop infinito de erros se o stub falhar
-        pass
+        print(f"Erro ao enviar Rich Message: {e}")
+        # Fallback para mensagem normal se falhar (ex: servidor não suporta)
+        try:
+            await message.reply(message.text)
+        except:
+            pass
 
 if __name__ == "__main__":
-    print("Bot de Rich Messages iniciado...")
-    client.start(bot_token=config.BOT_TOKEN)
-    client.run_until_disconnected()
+    print("Bot PyroTGFork iniciado no Layer 227...")
+    app.run()

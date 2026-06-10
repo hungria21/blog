@@ -1,67 +1,69 @@
-# Exemplos de Formatação Rich Message (Telegram Layer 227)
+# Guia de Formatação Rich Message (Layer 227)
 
-Esta lista contém exemplos de formatações suportadas pelo novo sistema de 'Rich Messages' do Telegram (Layer 227).
+Este bot suporta GitHub Flavored Markdown (GFM) e extensões do Telegram Layer 227 para formatações ricas enviadas nativamente.
 
-## 1. Cabeçalhos (Headings)
-Suporta até 6 níveis de cabeçalho.
+## 1. GitHub Flavored Markdown (GFM)
+Formatos básicos de texto.
 ```markdown
-# Título H1
-## Título H2
-### Título H3
-#### Título H4
-##### Título H5
-###### Título H6
+**Negrito**
+*Itálico*
+~~Riscado~~
+||Spoiler||
+`Código em linha`
+
+```python
+# Bloco de código
+def hello():
+    print("Mundo")
+```
 ```
 
 ## 2. Fórmulas Matemáticas (LaTeX)
-Suporta fórmulas em linha e em blocos independentes.
+Use `$` para fórmulas em linha e `$$` para blocos.
 ```markdown
-Fórmula em linha: $E = mc^2$
+O teorema de Pitágoras é $a^2 + b^2 = c^2$.
 
-Bloco de fórmula:
+Bloco matemático:
 $$
-\int_{a}^{b} f(x) \,dx = F(b) - F(a)
+\frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
 $$
 ```
 
-## 3. Tabelas
-Tabelas nativas usando a sintaxe clássica do Markdown.
+## 3. Tabelas Nativa
+Sintaxe Markdown padrão para tabelas.
 ```markdown
-| Produto | Preço | Status |
-| :--- | :---: | ---: |
-| Bot MTProto | R$ 0,00 | Ativo |
-| Layer 227 | - | Beta |
+| Comando | Descrição |
+| :--- | :--- |
+| /start | Inicia o bot |
+| Texto | Converte para Rich |
 ```
 
-## 4. Listas e Checklists
-Listas ordenadas, não ordenadas e listas de tarefas.
+## 4. Cabeçalhos
 ```markdown
-- Item 1
-- Item 2
-  - Sub-item A
+# Nível 1
+## Nível 2
+### Nível 3
+```
+
+## 5. Listas e Checklists
+```markdown
+- Item A
+- Item B
+  - Sub-item
 
 1. Primeiro
 2. Segundo
 
-- [ ] Tarefa Pendente
-- [x] Tarefa Concluída
+[ ] Tarefa a fazer
+[x] Tarefa feita
 ```
 
-## 5. Citações (Blockquotes)
-Citações simples e expansíveis.
+## 6. Agrupamento de Mídia (Collage/SlideShow)
+*Nota: Requer mídias anexadas na mesma requisição.*
 ```markdown
-> Esta é uma citação simples.
-
-> [!QUOTE]
-> Esta é uma citação que pode ser configurada como colapsada no MTProto.
-```
-
-## 6. Colagem e SlideShow (Mídia)
-Agrupamento de mídias anexadas à mensagem.
-```markdown
-[collage:1,2,3] - Agrupa as mídias 1, 2 e 3 em uma colagem.
-[slideshow:4,5] - Agrupa as mídias 4 e 5 em um slideshow.
+[collage:1,2]
+[slideshow:1,2,3]
 ```
 
 ---
-*Nota: Estas formatações são processadas nativamente pelo servidor do Telegram quando enviadas via `inputRichMessageMarkdown` no Layer 227.*
+*Processado via MTProto `InputRichMessageMarkdown` (Layer 227).*

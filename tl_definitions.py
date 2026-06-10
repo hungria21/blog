@@ -1,11 +1,18 @@
-from telethon import types, functions
-from telethon.tl import TLObject, TLRequest
+from pyrogram import raw
+from pyrogram.raw.core import TLObject
+from pyrogram.raw.core.primitives import Int, Long, String, Vector, Bool
 import struct
 
-class InputRichMessageMarkdown(TLObject):
-    CONSTRUCTOR_ID = 0x09ac8186
+def to_signed_int(n):
+    return struct.unpack('<i', struct.pack('<I', n))[0]
 
-    def __init__(self, markdown, rtl=None, noautolink=None, photos=None, documents=None, users=None):
+# Implementação manual dos tipos Layer 227 no PyroTGFork
+class InputRichMessageMarkdown(TLObject):
+    ID = 0x09ac8186
+    QUALIFIED_NAME = "raw.types.InputRichMessageMarkdown"
+
+    def __init__(self, markdown: str, rtl: bool = None, noautolink: bool = None,
+                 photos: list = None, documents: list = None, users: list = None):
         self.markdown = markdown
         self.rtl = rtl
         self.noautolink = noautolink
@@ -13,37 +20,24 @@ class InputRichMessageMarkdown(TLObject):
         self.documents = documents
         self.users = users
 
-    def to_dict(self):
-        return {
-            '_': 'InputRichMessageMarkdown',
-            'markdown': self.markdown,
-            'rtl': self.rtl,
-            'noautolink': self.noautolink,
-            'photos': self.photos,
-            'documents': self.documents,
-            'users': self.users
-        }
-
-    def _bytes(self):
+    def write(self):
         flags = 0
-        if self.rtl: flags |= 1
-        if self.noautolink: flags |= 2
-        if self.photos: flags |= 4
-        if self.documents: flags |= 8
-        if self.users: flags |= 16
+        if self.rtl: flags |= (1 << 0)
+        if self.noautolink: flags |= (1 << 1)
+        if self.photos: flags |= (1 << 2)
+        if self.documents: flags |= (1 << 3)
+        if self.users: flags |= (1 << 4)
 
-        return (
-            struct.pack('<I', self.CONSTRUCTOR_ID) +
-            struct.pack('<I', flags) +
-            TLObject.serialize_bytes(self.markdown) +
-            (TLObject.serialize_bytes(self.photos) if self.photos else b'') +
-            (TLObject.serialize_bytes(self.documents) if self.documents else b'') +
-            (TLObject.serialize_bytes(self.users) if self.users else b'')
-        )
+        b = Int(to_signed_int(self.ID))
+        b += Int(flags)
+        b += String(self.markdown)
+        if self.photos: b += Vector(self.photos)
+        if self.documents: b += Vector(self.documents)
+        if self.users: b += Vector(self.users)
+        return b
 
-class SendMessageLayer227Request(TLRequest):
-    CONSTRUCTOR_ID = 0xfef48f62
-    METHOD_NAME = 'messages.sendMessage'
+class SendMessageLayer227(raw.functions.messages.SendMessage):
+    ID = 0xfef48f62
 
     def __init__(self, peer, message, random_id,
                  no_webpage=None, silent=None, background=None, clear_draft=None,
@@ -52,9 +46,7 @@ class SendMessageLayer227Request(TLRequest):
                  entities=None, schedule_date=None, schedule_repeat_period=None,
                  send_as=None, quick_reply_shortcut=None, effect=None,
                  allow_paid_stars=None, suggested_post=None, rich_message=None):
-        self.peer = peer
-        self.message = message
-        self.random_id = random_id
+        super().__init__(peer=peer, message=message, random_id=random_id)
         self.no_webpage = no_webpage
         self.silent = silent
         self.background = background
@@ -75,68 +67,42 @@ class SendMessageLayer227Request(TLRequest):
         self.suggested_post = suggested_post
         self.rich_message = rich_message
 
-    def _bytes(self):
+    def write(self):
         flags = 0
-        if self.reply_to: flags |= 1
-        if self.no_webpage: flags |= 2
-        if self.reply_markup: flags |= 4
-        if self.entities: flags |= 8
-        if self.silent: flags |= 32
-        if self.background: flags |= 64
-        if self.clear_draft: flags |= 128
-        if self.schedule_date: flags |= 1024
-        if self.send_as: flags |= 8192
-        if self.noforwards: flags |= 16384
-        if self.update_stickersets_order: flags |= 32768
-        if self.invert_media: flags |= 65536
-        if self.quick_reply_shortcut: flags |= 131072
-        if self.effect: flags |= 262144
-        if self.allow_paid_floodskip: flags |= 524288
-        if self.allow_paid_stars: flags |= 2097152
-        if self.suggested_post: flags |= 4194304
-        if self.rich_message: flags |= 8388608
-        if self.schedule_repeat_period: flags |= 16777216
+        if self.reply_to: flags |= (1 << 0)
+        if self.no_webpage: flags |= (1 << 1)
+        if self.reply_markup: flags |= (1 << 2)
+        if self.entities: flags |= (1 << 3)
+        if self.silent: flags |= (1 << 5)
+        if self.background: flags |= (1 << 6)
+        if self.clear_draft: flags |= (1 << 7)
+        if self.schedule_date: flags |= (1 << 10)
+        if self.send_as: flags |= (1 << 13)
+        if self.noforwards: flags |= (1 << 14)
+        if self.update_stickersets_order: flags |= (1 << 15)
+        if self.invert_media: flags |= (1 << 16)
+        if self.quick_reply_shortcut: flags |= (1 << 17)
+        if self.effect: flags |= (1 << 18)
+        if self.allow_paid_floodskip: flags |= (1 << 19)
+        if self.allow_paid_stars: flags |= (1 << 21)
+        if self.suggested_post: flags |= (1 << 22)
+        if self.rich_message: flags |= (1 << 23)
+        if self.schedule_repeat_period: flags |= (1 << 24)
 
-        return (
-            struct.pack('<I', self.CONSTRUCTOR_ID) +
-            struct.pack('<I', flags) +
-            self.peer._bytes() +
-            (self.reply_to._bytes() if self.reply_to else b'') +
-            TLObject.serialize_bytes(self.message) +
-            struct.pack('<q', self.random_id) +
-            (self.reply_markup._bytes() if self.reply_markup else b'') +
-            (TLObject.serialize_bytes(self.entities) if self.entities else b'') +
-            (struct.pack('<I', self.schedule_date) if self.schedule_date else b'') +
-            (TLObject.serialize_bytes(self.send_as) if self.send_as else b'') +
-            (TLObject.serialize_bytes(self.quick_reply_shortcut) if self.quick_reply_shortcut else b'') +
-            (struct.pack('<q', self.effect) if self.effect else b'') +
-            (struct.pack('<q', self.allow_paid_stars) if self.allow_paid_stars else b'') +
-            (TLObject.serialize_bytes(self.suggested_post) if self.suggested_post else b'') +
-            (self.rich_message._bytes() if self.rich_message else b'') +
-            (struct.pack('<I', self.schedule_repeat_period) if self.schedule_repeat_period else b'')
-        )
-
-# Stub para evitar TypeNotFoundError na leitura do resultado
-class MessageLayer227(TLObject):
-    CONSTRUCTOR_ID = 0x7600b9d3
-    def __init__(self, **kwargs):
-        # Adiciona o atributo 'message' para evitar quebra no handler do Telethon
-        # mas como não lemos os bytes, o valor será fixo ou extraído erroneamente
-        self.message = ""
-        self.id = 0
-        self.peer_id = None
-        self.date = 0
-
-    @classmethod
-    def from_reader(cls, reader):
-        # Apenas pula os bytes para não crashar imediatamente
-        # No uso real, precisaríamos ler todos os campos conforme o schema
-        return cls()
-
-def register_layer_227_types():
-    # Registra o construtor no mapa do Telethon
-    try:
-        from telethon.tl.alltlobjects import tlobjects
-        tlobjects[MessageLayer227.CONSTRUCTOR_ID] = MessageLayer227
-    except ImportError:
-        pass
+        b = Int(to_signed_int(self.ID))
+        b += Int(flags)
+        if self.reply_to: b += self.reply_to.write()
+        b += self.peer.write()
+        b += String(self.message)
+        b += Long(self.random_id)
+        if self.reply_markup: b += self.reply_markup.write()
+        if self.entities: b += Vector(self.entities)
+        if self.schedule_date: b += Int(self.schedule_date)
+        if self.send_as: b += self.send_as.write()
+        if self.quick_reply_shortcut: b += self.quick_reply_shortcut.write()
+        if self.effect: b += Long(self.effect)
+        if self.allow_paid_stars: b += Long(self.allow_paid_stars)
+        if self.suggested_post: b += self.suggested_post.write()
+        if self.rich_message: b += self.rich_message.write()
+        if self.schedule_repeat_period: b += Int(self.schedule_repeat_period)
+        return b
