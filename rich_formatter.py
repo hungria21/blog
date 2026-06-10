@@ -29,7 +29,33 @@ def parse_rich_message(text):
     entities = []
     current_text = text
 
-    # 1. Blockquotes (Handle these first as they are line-based)
+    # 1. Headings (Simulated)
+    lines = current_text.split('\n')
+    temp_text = ""
+    for line in lines:
+        match = re.match(r'^(#{1,6})\s+(.*)$', line)
+        if match:
+            level = len(match.group(1))
+            content = match.group(2)
+            prefix = "◈ " if level == 1 else "◇ "
+            replacement = prefix + content.upper() if level == 1 else prefix + content
+            start = get_utf16_len(temp_text) + (1 if temp_text else 0)
+            length = get_utf16_len(replacement)
+            entities.append(MessageEntityBold(offset=start, length=length))
+            temp_text += ('\n' if temp_text else '') + replacement
+        else:
+            temp_text += ('\n' if temp_text else '') + line
+    current_text = temp_text
+
+    # 2. Checklists
+    current_text = current_text.replace("[ ] ", "⬜ ")
+    current_text = current_text.replace("[x] ", "✅ ")
+    current_text = current_text.replace("[X] ", "✅ ")
+
+    # 3. Horizontal Rules
+    current_text = current_text.replace("---", "────────────────────")
+
+    # 4. Blockquotes (Handle these first as they are line-based)
     lines = current_text.split('\n')
     temp_text = ""
     for line in lines:
