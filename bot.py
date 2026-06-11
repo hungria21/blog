@@ -6,17 +6,20 @@ from config import BOT_TOKEN
 class RichMessageBot:
     """
     Implementação de um bot para a versão 10.1 da API de Bots do Telegram.
-    Focada no novo recurso de 'Rich Messages'.
+    Focada no novo recurso de 'Rich Messages', com conexão robusta.
     """
     def __init__(self, token):
         self.token = token
         self.base_url = f"https://api.telegram.org/bot{token}"
         self.offset = 0
+        self.session = requests.Session()
+        self.session.headers.update({
+            "User-Agent": "RichMessageBot/10.1 (Python Requests Robust Version)"
+        })
 
     def send_rich_message(self, chat_id, markdown=None, html=None, is_rtl=False, skip_detection=False):
         """
         Envia uma Rich Message usando o novo método da API 10.1.
-        Aceita markdown ou html como entrada para o objeto InputRichMessage.
         """
         url = f"{self.base_url}/sendRichMessage"
 
@@ -38,62 +41,53 @@ class RichMessageBot:
         }
 
         try:
-            response = requests.post(url, json=payload)
+            response = self.session.post(url, json=payload, timeout=10)
             response_json = response.json()
             if not response_json.get("ok"):
                 print(f"Aviso da API: {response_json.get('description')}")
             return response_json
-        except Exception as e:
-            print(f"Erro ao enviar Rich Message: {e}")
+        except requests.exceptions.RequestException as e:
+            print(f"Erro de rede ao enviar Rich Message: {e}")
             return None
 
     def get_updates(self):
         url = f"{self.base_url}/getUpdates"
         params = {"offset": self.offset, "timeout": 20}
         try:
-            response = requests.get(url, params=params)
+            # Long polling com timeout maior no requests para evitar aborts prematuros
+            response = self.session.get(url, params=params, timeout=25)
             return response.json()
+        except requests.exceptions.ConnectionError as e:
+            print(f"Erro de conexão (abortado?): {e}. Tentando novamente em 5 segundos...")
+            time.sleep(5)
+            return None
+        except requests.exceptions.Timeout:
+            # Timeout normal do long polling, não é erro
+            return {"ok": True, "result": []}
         except Exception as e:
-            print(f"Erro ao buscar updates: {e}")
+            print(f"Erro inesperado ao buscar updates: {e}")
             return None
 
     def handle_start(self, chat_id):
         text = (
-            "# Bem-vindo ao RichBot! 🚀\n\n"
-            "Eu sou um bot demonstrativo da **Bot API 10.1** (Junho 2026).\n"
-            "Minha especialidade é formatar mensagens usando o novo recurso **Rich Messages**.\n\n"
-            "Use `/demo` para ver meu poder total de formatação estruturada!"
+            "# Bem-vindo ao RichBot v10.1 (Estável)! 🚀\n\n"
+            "Este bot agora usa uma conexão persistente para evitar erros de rede.\n\n"
+            "Use `/demo` para ver as novas formatações estruturadas."
         )
         self.send_rich_message(chat_id, markdown=text)
 
     def handle_demo(self, chat_id):
-        """
-        Exemplo complexo utilizando os novos blocos suportados pela versão 10.1.
-        """
         demo_markdown = (
             "# 📊 Demonstração de Rich Messages\n\n"
-            "As Rich Messages permitem estruturas complexas diretamente no chat.\n\n"
             "## 1. Tabelas Nativas\n"
-            "| Recurso | Status | Nível |\n"
+            "| Recurso | Status | Estabilidade |\n"
             "|:---|:---:|:---:|\n"
-            "| Tabelas | ✅ Ativo | Pro |\n"
-            "| LaTeX | ✅ Ativo | Científico |\n"
-            "| Checklists | ✅ Ativo | Task |\n\n"
-            "## 2. Fórmulas Matemáticas (LaTeX)\n"
-            "A equação de Einstein é $$E = mc^2$$.\n"
-            "Ou em bloco complexo:\n"
-            "```math\n"
-            "\\int_{a}^{b} x^2 dx = \\frac{b^3 - a^3}{3}\n"
-            "```\n\n"
-            "## 3. Checklists Estruturadas\n"
-            "- [x] Criar o bot v10.1\n"
-            "- [x] Adicionar suporte a tabelas\n"
-            "- [ ] Enviar para os usuários\n\n"
-            "## 4. Blocos Expansíveis (via HTML)\n"
-            "Você pode aninhar HTML dentro do Rich Markdown para recursos extras:\n"
-            "<details><summary>Clique para ver detalhes</summary>Este conteúdo estava oculto em uma Rich Message!</details>\n\n"
+            "| Tabelas | ✅ OK | Pro |\n"
+            "| Sessão | ✅ OK | Alta |\n\n"
+            "## 2. LaTeX\n"
+            "$$e^{i\\pi} + 1 = 0$$\n\n"
             "--- \n"
-            "<footer>Gerado por RichMessageBot v10.1</footer>"
+            "<footer>Conexão Robustecida via requests.Session</footer>"
         )
         self.send_rich_message(chat_id, markdown=demo_markdown)
 
@@ -102,7 +96,7 @@ class RichMessageBot:
             print("Erro: Você esqueceu de configurar seu BOT_TOKEN no arquivo config.py!")
             sys.exit(1)
 
-        print("RichMessageBot v10.1 iniciado... Pressione Ctrl+C para parar.")
+        print("RichMessageBot v10.1 (Versão Robusta) iniciado... Ctrl+C para parar.")
         try:
             while True:
                 updates = self.get_updates()
@@ -119,15 +113,18 @@ class RichMessageBot:
                             elif text == "/demo":
                                 self.handle_demo(chat_id)
                             elif text:
-                                echo = f"### Você enviou:\n\n> {text}\n\n*Processado via Rich Message API.*"
+                                echo = f"### Recebido:\n\n> {text}\n\n*Processado com sucesso.*"
                                 self.send_rich_message(chat_id, markdown=echo)
 
-                time.sleep(1)
+                # Pequena pausa entre iterações se não houver updates para aliviar a CPU
+                if updates and not updates["result"]:
+                    time.sleep(0.5)
+
         except KeyboardInterrupt:
             print("\nBot parado pelo usuário.")
+        finally:
+            self.session.close()
 
 if __name__ == "__main__":
     bot = RichMessageBot(BOT_TOKEN)
-    # Para rodar o bot de fato, você deve preencher o token no config.py
-    # e descomentar a linha abaixo.
     bot.run()

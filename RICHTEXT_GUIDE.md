@@ -115,6 +115,30 @@ Para utilizar este modo, o conteúdo deve ser enviado no campo `html` do objeto 
 
 ## 4. Exemplos de Uso no Bot
 
+---
+
+## 4. Uso Programático (rich_models.py)
+
+Para facilitar a criação de mensagens complexas sem lidar com strings manuais, utilize as classes fornecidas no projeto:
+
+```python
+from rich_models import RichMessageBuilder, Heading, Bold, Table, TableCell, RichText
+
+builder = RichMessageBuilder()
+builder.add(Heading(RichText("Relatório de Vendas"), level=1))
+
+# Criando uma tabela
+header = [TableCell(RichText("Produto"), is_header=True), TableCell(RichText("Qtd"), is_header=True)]
+row1 = [TableCell(RichText("Bot")), TableCell(RichText("10"))]
+builder.add(Table([header, row1]))
+
+# Gerando o payload
+markdown_text = builder.build_markdown()
+bot.send_rich_message(chat_id, markdown=markdown_text)
+```
+
+## 5. API Reference (Bot API 10.1)
+
 Para enviar uma Rich Message via API:
 **Método:** `sendRichMessage`
 **Parâmetros:**

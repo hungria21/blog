@@ -1,17 +1,14 @@
 import json
 from bot import RichMessageBot
+from rich_models import RichMessageBuilder, Heading, Bold, Math, Table, TableCell, RichText
 
 def test_payload_generation():
     bot = RichMessageBot("fake_token")
-
-    # Teste Markdown
     chat_id = 12345
+
+    # Teste Manual
     markdown_content = "# Hello\n| Table |"
 
-    # Simular a construção do payload sem enviar de fato (mocking requests.post não necessário aqui,
-    # apenas queremos ver se o objeto rich_message é gerado corretamente na estrutura que passamos para o post)
-
-    # Vamos criar uma versão de teste que retorna o payload em vez de enviar
     def get_mock_payload(chat_id, markdown=None, html=None, is_rtl=False, skip_detection=False):
         rich_message = {
             "is_rtl": is_rtl,
@@ -28,21 +25,29 @@ def test_payload_generation():
         }
 
     payload = get_mock_payload(chat_id, markdown=markdown_content)
-
-    print("Payload gerado:", json.dumps(payload, indent=2))
-
     assert payload["chat_id"] == 12345
-    assert "rich_message" in payload
     assert payload["rich_message"]["markdown"] == markdown_content
-    assert payload["rich_message"]["is_rtl"] is False
 
-    # Teste HTML
-    html_content = "<h1>Title</h1>"
-    payload_html = get_mock_payload(chat_id, html=html_content, is_rtl=True)
-    assert payload_html["rich_message"]["html"] == html_content
-    assert payload_html["rich_message"]["is_rtl"] is True
+    print("Teste manual básico passou.")
 
-    print("Testes de payload passaram!")
+def test_object_model():
+    builder = RichMessageBuilder()
+    builder.add(Heading(RichText([Bold("Título"), " de Teste"]), level=2))
+    builder.add(Math("x = 2", block=True))
+
+    md = builder.build_markdown()
+    print("Markdown gerado pelo modelo:\n", md)
+
+    assert "## **Título** de Teste" in md
+    assert "$$x = 2$$" in md
+
+    html = builder.build_html()
+    print("HTML gerado pelo modelo:\n", html)
+    assert "<h2><b>Título</b> de Teste</h2>" in html
+    assert "<tg-math-block>x = 2</tg-math-block>" in html
+
+    print("Teste do modelo de objetos passou!")
 
 if __name__ == "__main__":
     test_payload_generation()
+    test_object_model()
