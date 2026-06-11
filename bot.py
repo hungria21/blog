@@ -2,6 +2,7 @@ import requests
 import time
 import sys
 from config import BOT_TOKEN
+from rich_models import RichMessageBuilder, Heading, RichText, Photo, Slideshow
 
 class RichMessageBot:
     """
@@ -91,6 +92,22 @@ class RichMessageBot:
         )
         self.send_rich_message(chat_id, markdown=demo_markdown)
 
+    def handle_slideshow(self, chat_id):
+        """
+        Cria um Slideshow usando os links fornecidos.
+        """
+        builder = RichMessageBuilder()
+        builder.add(Heading(RichText("🎞️ Meu SlideShow"), level=1))
+
+        photos = [
+            Photo("https://i.ibb.co/jP0Jcgwz/file-529.jpg", caption="Primeira Imagem"),
+            Photo("https://i.ibb.co/KpDX3N4m/file-530.jpg", caption="Segunda Imagem")
+        ]
+
+        builder.add(Slideshow(photos, caption="Coleção de Fotos do Usuário"))
+
+        self.send_rich_message(chat_id, markdown=builder.build_markdown())
+
     def run(self):
         if self.token == "SEU_TOKEN_AQUI":
             print("Erro: Você esqueceu de configurar seu BOT_TOKEN no arquivo config.py!")
@@ -112,6 +129,8 @@ class RichMessageBot:
                                 self.handle_start(chat_id)
                             elif text == "/demo":
                                 self.handle_demo(chat_id)
+                            elif text == "/slideshow":
+                                self.handle_slideshow(chat_id)
                             elif text:
                                 echo = f"### Recebido:\n\n> {text}\n\n*Processado com sucesso.*"
                                 self.send_rich_message(chat_id, markdown=echo)

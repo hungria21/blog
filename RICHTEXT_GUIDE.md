@@ -62,6 +62,17 @@ Para utilizar este modo, o conteúdo deve ser enviado no campo `markdown` do obj
 - Vídeo: `![](https://link.com/video.mp4)`
 - Com legenda: `![](https://link.com/foto.jpg "Legenda aqui")`
 
+### Colagens e SlideShows (Markdown)
+No Rich Markdown, as colagens e slideshows são inseridos utilizando tags HTML diretamente no corpo do texto:
+
+```markdown
+<tg-slideshow>
+![](https://link.com/foto1.jpg "Legenda 1")
+![](https://link.com/foto2.jpg "Legenda 2")
+<figcaption>Legenda do Slideshow</figcaption>
+</tg-slideshow>
+```
+
 ---
 
 ## 2. Rich HTML
@@ -94,11 +105,16 @@ Para utilizar este modo, o conteúdo deve ser enviado no campo `html` do objeto 
   ```
 - **Mapas:** `<tg-map lat="41.9" long="12.5" zoom="14"/>`
 - **Colagens e Slideshows:**
+  No Rich HTML, use as tags `<tg-collage>` ou `<tg-slideshow>`. Você pode incluir legendas usando `<figcaption>`.
   ```html
-  <tg-collage>
-    <img src="URL1"/>
-    <img src="URL2"/>
-  </tg-collage>
+  <tg-slideshow>
+    <figure>
+      <img src="https://link.com/foto1.jpg"/>
+      <figcaption>Legenda da Foto 1</figcaption>
+    </figure>
+    <img src="https://link.com/foto2.jpg"/>
+    <figcaption>Legenda Geral do Slideshow</figcaption>
+  </tg-slideshow>
   ```
 
 ---
@@ -112,9 +128,6 @@ Para utilizar este modo, o conteúdo deve ser enviado no campo `html` do objeto 
 - **Colunas:** Máximo de 20 colunas em uma tabela.
 
 ---
-
-## 4. Exemplos de Uso no Bot
-
 ---
 
 ## 4. Uso Programático (rich_models.py)

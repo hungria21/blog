@@ -144,6 +144,65 @@ class ChecklistItem(RichElement):
         mark = "✅ " if self.checked else "⬜ "
         return f"<li>{mark}{self.text.to_html()}</li>"
 
+class Photo(RichElement):
+    def __init__(self, url: str, caption: Optional[str] = None):
+        self.url = url
+        self.caption = caption
+
+    def to_markdown(self) -> str:
+        cap = f' "{self.caption}"' if self.caption else ""
+        return f"![{self.caption or ''}]({self.url}{cap})"
+
+    def to_html(self) -> str:
+        if self.caption:
+            return f'<figure><img src="{self.url}"/><figcaption>{self.caption}</figcaption></figure>'
+        return f'<img src="{self.url}"/>'
+
+class Video(RichElement):
+    def __init__(self, url: str, caption: Optional[str] = None):
+        self.url = url
+        self.caption = caption
+
+    def to_markdown(self) -> str:
+        cap = f' "{self.caption}"' if self.caption else ""
+        return f"![{self.caption or ''}]({self.url}{cap})"
+
+    def to_html(self) -> str:
+        if self.caption:
+            return f'<figure><video src="{self.url}"></video><figcaption>{self.caption}</figcaption></figure>'
+        return f'<video src="{self.url}"></video>'
+
+class Collage(RichElement):
+    def __init__(self, elements: List[Union[Photo, Video]], caption: Optional[str] = None):
+        self.elements = elements
+        self.caption = caption
+
+    def to_markdown(self) -> str:
+        # Colagens são representadas via tag HTML no Rich Markdown
+        items = "\n".join([e.to_markdown() for e in self.elements])
+        cap = f"<figcaption>{self.caption}</figcaption>" if self.caption else ""
+        return f"<tg-collage>\n{items}\n{cap}\n</tg-collage>"
+
+    def to_html(self) -> str:
+        items = "".join([e.to_html() for e in self.elements])
+        cap = f"<figcaption>{self.caption}</figcaption>" if self.caption else ""
+        return f"<tg-collage>{items}{cap}</tg-collage>"
+
+class Slideshow(RichElement):
+    def __init__(self, elements: List[Union[Photo, Video]], caption: Optional[str] = None):
+        self.elements = elements
+        self.caption = caption
+
+    def to_markdown(self) -> str:
+        items = "\n".join([e.to_markdown() for e in self.elements])
+        cap = f"<figcaption>{self.caption}</figcaption>" if self.caption else ""
+        return f"<tg-slideshow>\n{items}\n{cap}\n</tg-slideshow>"
+
+    def to_html(self) -> str:
+        items = "".join([e.to_html() for e in self.elements])
+        cap = f"<figcaption>{self.caption}</figcaption>" if self.caption else ""
+        return f"<tg-slideshow>{items}{cap}</tg-slideshow>"
+
 class RichMessageBuilder:
     def __init__(self):
         self.elements: List[RichElement] = []
