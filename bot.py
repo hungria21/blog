@@ -36,7 +36,7 @@ class RichMessageBot:
             print(f"Erro ao obter URL do arquivo: {e}")
         return None
 
-    def send_rich_message(self, chat_id, markdown=None, html=None, is_rtl=False, skip_detection=False):
+    def send_rich_message(self, chat_id, markdown=None, html=None, is_rtl=False, skip_detection=False, photos=None, documents=None):
         """
         Envia uma Rich Message usando o novo método da API 10.1.
         """
@@ -53,6 +53,11 @@ class RichMessageBot:
             rich_message["html"] = html
         else:
             raise ValueError("É necessário fornecer 'markdown' ou 'html' no objeto rich_message.")
+
+        if photos:
+            rich_message["photos"] = photos
+        if documents:
+            rich_message["documents"] = documents
 
         payload = {
             "chat_id": chat_id,
@@ -117,10 +122,12 @@ class RichMessageBot:
             return
 
         mode = state["mode"]
-        photos_urls = state["photos"]
+        file_ids = state["photos"]
         builder = RichMessageBuilder()
 
-        rich_photos = [Photo(url) for url in photos_urls]
+        # No Markdown das Rich Messages, para mídias internas, usamos o índice no vetor de photos/documents
+        # Sintaxe: attach://<index>
+        rich_photos = [Photo(f"attach://{i}") for i in range(len(file_ids))]
 
         if mode == "collage":
             builder.add(Heading(RichText("🖼️ Sua Colagem"), level=1))
@@ -129,7 +136,7 @@ class RichMessageBot:
             builder.add(Heading(RichText("🎞️ Seu SlideShow"), level=1))
             builder.add(Slideshow(rich_photos))
 
-        self.send_rich_message(chat_id, markdown=builder.build_markdown())
+        self.send_rich_message(chat_id, markdown=builder.build_markdown(), photos=file_ids)
         del self.user_states[chat_id]
 
     def answer_inline_query(self, inline_query_id, results):
@@ -287,11 +294,9 @@ class RichMessageBot:
                                 if chat_id in self.user_states:
                                     # Pega a maior resolução disponível
                                     file_id = msg["photo"][-1]["file_id"]
-                                    file_url = self.get_file_url(file_id)
-                                    if file_url:
-                                        self.user_states[chat_id]["photos"].append(file_url)
-                                        count = len(self.user_states[chat_id]["photos"])
-                                        self.send_rich_message(chat_id, markdown=f"Imagem {count} recebida.")
+                                    self.user_states[chat_id]["photos"].append(file_id)
+                                    count = len(self.user_states[chat_id]["photos"])
+                                    self.send_rich_message(chat_id, markdown=f"Imagem {count} recebida.")
                             elif text:
                                 # Envia o texto puro como Rich Message para permitir testes de formatação manual
                                 self.send_rich_message(chat_id, markdown=text)
