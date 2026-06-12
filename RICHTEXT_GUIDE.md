@@ -130,7 +130,18 @@ Para utilizar este modo, o conteúdo deve ser enviado no campo `html` do objeto 
 ---
 ---
 
-## 4. Uso Programático (rich_models.py)
+## 4. Mapas e Localização
+
+O Telegram 10.1 introduziu suporte para mapas interativos dentro das Rich Messages.
+
+### Markdown / HTML
+```html
+<tg-map lat="41.9" long="12.5" zoom="14"/>
+```
+
+---
+
+## 5. Uso Programático (rich_models.py)
 
 Para facilitar a criação de mensagens complexas sem lidar com strings manuais, utilize as classes fornecidas no projeto:
 
@@ -152,7 +163,7 @@ bot.send_rich_message(chat_id, markdown=markdown_text)
 
 ---
 
-## 5. Modo Inline
+## 6. Modo Inline
 
 O bot suporta o modo inline para transformar links e textos em Rich Messages instantaneamente através de templates pré-configurados.
 
@@ -167,7 +178,7 @@ O bot suporta o modo inline para transformar links e textos em Rich Messages ins
 
 ---
 
-## 6. API Reference (Bot API 10.1)
+## 7. API Reference (Bot API 10.1)
 
 Para enviar uma Rich Message via API:
 **Método:** `sendRichMessage`

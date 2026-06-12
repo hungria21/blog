@@ -203,6 +203,23 @@ class Slideshow(RichElement):
         cap = f"<figcaption>{self.caption}</figcaption>" if self.caption else ""
         return f"<tg-slideshow>{items}{cap}</tg-slideshow>"
 
+class Map(RichElement):
+    def __init__(self, lat: float, long: float, zoom: int = 14, caption: Optional[str] = None):
+        self.lat = lat
+        self.long = long
+        self.zoom = zoom
+        self.caption = caption
+
+    def to_markdown(self) -> str:
+        cap = f'<figcaption>{self.caption}</figcaption>' if self.caption else ""
+        return f'<tg-map lat="{self.lat}" long="{self.long}" zoom="{self.zoom}"/>\n{cap}'
+
+    def to_html(self) -> str:
+        tag = f'<tg-map lat="{self.lat}" long="{self.long}" zoom="{self.zoom}"/>'
+        if self.caption:
+            return f'<figure>{tag}<figcaption>{self.caption}</figcaption></figure>'
+        return tag
+
 class Details(RichElement):
     def __init__(self, summary: RichText, content: List[RichElement], open: bool = False):
         self.summary = summary

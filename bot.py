@@ -138,7 +138,11 @@ class RichMessageBot:
                 "title": "Criar SlideShow",
                 "description": f"Criar galeria com {len(urls)} links",
                 "input_message_content": {
-                    "rich_message": {"markdown": b_slideshow.build_markdown()}
+                    "rich_message": {
+                        "markdown": b_slideshow.build_markdown(),
+                        "is_rtl": False,
+                        "skip_entity_detection": False
+                    }
                 }
             })
 
@@ -153,7 +157,11 @@ class RichMessageBot:
                 "title": "Criar Colagem",
                 "description": "Exibir imagens em mosaico",
                 "input_message_content": {
-                    "rich_message": {"markdown": b_collage.build_markdown()}
+                    "rich_message": {
+                        "markdown": b_collage.build_markdown(),
+                        "is_rtl": False,
+                        "skip_entity_detection": False
+                    }
                 }
             })
 
@@ -171,7 +179,11 @@ class RichMessageBot:
                 "title": "Criar Tabela",
                 "description": f"Gerar tabela com: {query_text[:15]}...",
                 "input_message_content": {
-                    "rich_message": {"markdown": b_table.build_markdown()}
+                    "rich_message": {
+                        "markdown": b_table.build_markdown(),
+                        "is_rtl": False,
+                        "skip_entity_detection": False
+                    }
                 }
             })
 
@@ -186,15 +198,19 @@ class RichMessageBot:
                 "title": "Converter para LaTeX",
                 "description": "Formatar como fórmula matemática",
                 "input_message_content": {
-                    "rich_message": {"markdown": b_math.build_markdown()}
+                    "rich_message": {
+                        "markdown": b_math.build_markdown(),
+                        "is_rtl": False,
+                        "skip_entity_detection": False
+                    }
                 }
             })
 
             # 5. Template Bloco Expansível
             b_details = RichMessageBuilder()
             b_details.add(Details(
-                summary=RichText(f"Informações sobre: {query_text[:10]}"),
-                content=[RichText(f"Aqui estão os detalhes completos sobre '{query_text}'. Este bloco pode conter muito texto e ser expandido pelo usuário.")]
+                summary=RichText(f"Detalhes de: {query_text[:15]}..."),
+                content=[RichText(f"Conteúdo expandido para: {query_text}")]
             ))
 
             results.append({
@@ -203,7 +219,11 @@ class RichMessageBot:
                 "title": "Criar Bloco Expansível",
                 "description": "Conteúdo oculto que abre ao clicar",
                 "input_message_content": {
-                    "rich_message": {"markdown": b_details.build_markdown()}
+                    "rich_message": {
+                        "markdown": b_details.build_markdown(),
+                        "is_rtl": False,
+                        "skip_entity_detection": False
+                    }
                 }
             })
 
@@ -235,8 +255,8 @@ class RichMessageBot:
                             elif text == "/slideshow":
                                 self.handle_slideshow(chat_id)
                             elif text:
-                                echo = f"### Recebido:\n\n> {text}\n\n*Processado com sucesso.*"
-                                self.send_rich_message(chat_id, markdown=echo)
+                                # Envia o texto puro como Rich Message para permitir testes de formatação manual
+                                self.send_rich_message(chat_id, markdown=text)
 
                         # Modo Inline
                         elif "inline_query" in update:
