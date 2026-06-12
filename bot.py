@@ -2,8 +2,10 @@ import requests
 import time
 import sys
 import re
+import hashlib
 from config import BOT_TOKEN
 from rich_models import RichMessageBuilder, Heading, RichText, Photo, Slideshow, Collage, Table, TableCell, Bold, Math, Details
+from dialects import MARKDOWN_CATALOG
 
 class RichMessageBot:
     """
@@ -72,11 +74,62 @@ class RichMessageBot:
 
     def handle_start(self, chat_id):
         text = (
-            "# Bem-vindo ao RichBot v10.1 (Estável)! 🚀\n\n"
-            "Este bot agora usa uma conexão persistente para evitar erros de rede.\n\n"
-            "Use `/demo` para ver as novas formatações estruturadas."
+            "# Bem-vindo ao RichBot v10.1! 🚀\n\n"
+            "Eu dou suporte a todas as sintaxes e dialetos de Markdown através do novo recurso de **Rich Messages**.\n\n"
+            "Escolha uma categoria abaixo para ver guias e referências:"
         )
-        self.send_rich_message(chat_id, markdown=text)
+
+        # Criar teclado inline com as categorias do catálogo
+        keyboard = []
+        row = []
+        for category in MARKDOWN_CATALOG.keys():
+            # Usar hash da categoria para o callback_data (limite de 64 bytes)
+            cat_id = hashlib.md5(category.encode()).hexdigest()[:10]
+            row.append({"text": category, "callback_data": f"cat_{cat_id}"})
+            if len(row) == 2:
+                keyboard.append(row)
+                row = []
+        if row:
+            keyboard.append(row)
+
+        url = f"{self.base_url}/sendRichMessage"
+        payload = {
+            "chat_id": chat_id,
+            "rich_message": {"markdown": text},
+            "reply_markup": {"inline_keyboard": keyboard}
+        }
+        self.session.post(url, json=payload)
+
+    def handle_callback_query(self, callback_query):
+        data = callback_query["data"]
+        chat_id = callback_query["message"]["chat"]["id"]
+        cq_id = callback_query["id"]
+
+        if data.startswith("cat_"):
+            target_cat_id = data[4:]
+            selected_category = None
+            for category in MARKDOWN_CATALOG.keys():
+                if hashlib.md5(category.encode()).hexdigest()[:10] == target_cat_id:
+                    selected_category = category
+                    break
+
+            if selected_category:
+                links = MARKDOWN_CATALOG[selected_category]
+                builder = RichMessageBuilder()
+                builder.add(Heading(RichText(f"📚 {selected_category}"), level=2))
+
+                rows = [[TableCell(RichText("Nome"), is_header=True), TableCell(RichText("Link"), is_header=True)]]
+                for item in links:
+                    rows.append([
+                        TableCell(RichText(item["name"])),
+                        TableCell(RichText(f"[Site]({item['url']})"))
+                    ])
+
+                builder.add(Table(rows))
+
+                # Responder o alerta e enviar a nova mensagem
+                self.session.post(f"{self.base_url}/answerCallbackQuery", json={"callback_query_id": cq_id})
+                self.send_rich_message(chat_id, markdown=builder.build_markdown())
 
     def handle_demo(self, chat_id):
         demo_markdown = (
@@ -227,6 +280,49 @@ class RichMessageBot:
                 }
             })
 
+            # 6. Template Ficha Técnica
+            b_info = RichMessageBuilder()
+            b_info.add(Heading(RichText(f"📋 Ficha: {query_text[:15]}"), level=2))
+            b_info.add(Table([
+                [TableCell(RichText("Propriedade"), is_header=True), TableCell(RichText("Descrição"), is_header=True)],
+                [TableCell(RichText("Nome")), TableCell(RichText(query_text[:20]))],
+                [TableCell(RichText("Tipo")), TableCell(RichText("Objeto Rich"))],
+                [TableCell(RichText("Versão")), TableCell(RichText("API 10.1"))]
+            ]))
+
+            results.append({
+                "type": "article",
+                "id": "info_sheet",
+                "title": "Criar Ficha Técnica",
+                "description": "Tabela estruturada de informações",
+                "input_message_content": {
+                    "rich_message": {
+                        "markdown": b_info.build_markdown(),
+                        "is_rtl": False,
+                        "skip_entity_detection": False
+                    }
+                }
+            })
+
+            # 7. Template Aviso Importante
+            b_warn = RichMessageBuilder()
+            b_warn.add(Heading(RichText("⚠️ AVISO IMPORTANTE"), level=1))
+            b_warn.add(RichText([Bold("Atenção: "), query_text]))
+
+            results.append({
+                "type": "article",
+                "id": "warning",
+                "title": "Criar Alerta",
+                "description": "Mensagem de destaque com cabeçalho",
+                "input_message_content": {
+                    "rich_message": {
+                        "markdown": b_warn.build_markdown(),
+                        "is_rtl": False,
+                        "skip_entity_detection": False
+                    }
+                }
+            })
+
         return results
 
     def run(self):
@@ -263,6 +359,10 @@ class RichMessageBot:
                             query = update["inline_query"]
                             results = self.generate_inline_results(query["query"])
                             self.answer_inline_query(query["id"], results)
+
+                        # Callback Queries (Teclado Inline)
+                        elif "callback_query" in update:
+                            self.handle_callback_query(update["callback_query"])
 
                 # Pequena pausa entre iterações se não houver updates para aliviar a CPU
                 if updates and not updates["result"]:

@@ -178,7 +178,26 @@ O bot suporta o modo inline para transformar links e textos em Rich Messages ins
 
 ---
 
-## 7. API Reference (Bot API 10.1)
+## 7. Catálogo de Sintaxes e Dialetos
+
+O RichMessageBot suporta a conversão de diversos dialetos para o formato nativo do Telegram. Abaixo estão as principais referências:
+
+### Base e Padronização
+- **Markdown Original:** [Daring Fireball](https://daringfireball.net/projects/markdown/)
+- **CommonMark:** [commonmark.org](https://commonmark.org/)
+- **GFM (GitHub):** [GitHub Flavored Markdown](https://github.github.com/gfm/)
+
+### Ecossistema Científico e Documentação
+- **LaTeX:** [Latex Project](https://www.latex-project.org/)
+- **MDX:** [mdxjs.com](https://mdxjs.com/)
+- **Astro / Docusaurus / MkDocs:** Todos utilizam variações de Markdown suportadas pelo bot.
+
+### Ferramentas de Anotações
+- **Obsidian / Logseq:** Suporte a wikilinks e aninhamentos complexos.
+
+---
+
+## 8. API Reference (Bot API 10.1)
 
 Para enviar uma Rich Message via API:
 **Método:** `sendRichMessage`
