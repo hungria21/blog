@@ -1,25 +1,50 @@
 import mistune
-from tl_definitions import InputRichMessageMarkdown
+import re
+from tl_definitions import InputRichMessageHtml
 
 class RichFormatter:
     def __init__(self):
+        # Configurar mistune para gerar HTML compatível com Rich Messages
         self.markdown = mistune.create_markdown(
             plugins=['strikethrough', 'table', 'url']
         )
 
+    def to_rich_html(self, text):
+        """Converte vários formatos para HTML rico do Telegram."""
+        # Pré-processamento simples para alguns formatos comuns
+
+        # 1. LaTeX simples ($...$ -> <tg-math>...</tg-math>)
+        text = re.sub(r'\$(.*?)\$', r'<tg-math>\1</tg-math>', text)
+        text = re.sub(r'\$\$(.*?)\$\$', r'<tg-math-block>\1</tg-math-block>', text, flags=re.DOTALL)
+
+        # 2. Spoiler estilo Discord (||...|| -> <tg-spoiler>...</tg-spoiler>)
+        text = re.sub(r'\|\|(.*?)\|\|', r'<tg-spoiler>\1</tg-spoiler>', text)
+
+        # 3. Markdown convert para HTML usando mistune
+        html = self.markdown(text)
+
+        # Ajustes no HTML gerado pelo mistune para bater com as tags do Telegram
+        # Mistune gera <strong> e <em>, Telegram prefere <b> e <i> (ou ambos funcionam no Rich)
+        # Mas vamos manter o padrão Telegram
+        html = html.replace('<strong>', '<b>').replace('</strong>', '</b>')
+        html = html.replace('<em>', '<i>').replace('</em>', '</i>')
+
+        return html
+
     def to_rich_message(self, text, photos=None, documents=None):
-        return InputRichMessageMarkdown(
-            markdown=text,
+        html = self.to_rich_html(text)
+        return InputRichMessageHtml(
+            html=html,
             photos=photos,
             documents=documents
         )
 
     def format_welcome_message(self):
         return (
-            "# Bem-vindo ao Rich Message Bot!\n\n"
-            "Eu posso formatar suas mensagens usando o novo sistema de **Rich Messages** do Telegram (v10.1+).\n\n"
-            "Envie-me qualquer texto em Markdown ou use meu modo inline para criar templates bonitos.\n\n"
-            "Suportamos diversos dialetos como GFM, CommonMark e mais!"
+            "<h1>Bem-vindo ao Rich Message Bot!</h1>"
+            "<p>Eu posso formatar suas mensagens usando o novo sistema de <b>Rich Messages</b> do Telegram (v10.1+).</p>"
+            "<p>Envie-me qualquer texto em Markdown, LaTeX ($...$), ou spoilers (||...||).</p>"
+            "<p>Use /sintaxe para ver todos os formatos suportados.</p>"
         )
 
     def get_syntax_catalog(self):

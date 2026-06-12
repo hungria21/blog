@@ -2,7 +2,7 @@ from telethon import TelegramClient, events, types, functions
 import config
 from formatter import RichFormatter
 from tl_definitions import (
-    InputRichMessageMarkdown,
+    InputRichMessageHtml,
     SendMessageLayer227Request,
     InputBotInlineMessageRichMessage,
     SetInlineBotResultsLayer227Request
@@ -15,9 +15,9 @@ client = TelegramClient('rich_bot_session', config.API_ID, config.API_HASH)
 formatter = RichFormatter()
 
 async def send_rich_message(peer, text, reply_markup=None):
+    # Usar HTML por padrão agora que temos InputRichMessageHtml
     rich_msg = formatter.to_rich_message(text)
     try:
-        # Usando InvokeWithLayer para garantir que o servidor processe como Layer 227
         await client(functions.InvokeWithLayerRequest(
             layer=227,
             query=SendMessageLayer227Request(
@@ -28,18 +28,21 @@ async def send_rich_message(peer, text, reply_markup=None):
         ))
     except Exception as e:
         print(f"Erro ao enviar Rich Message: {e}")
-        # Fallback para mensagem normal
-        await client.send_message(peer, text, buttons=reply_markup, parse_mode='markdown')
+        # Fallback para mensagem normal se falhar
+        await client.send_message(peer, text, buttons=reply_markup, parse_mode='html')
 
 @client.on(events.NewMessage(pattern='/start'))
 async def start_handler(event):
-    welcome_text = formatter.format_welcome_message()
-    catalog = formatter.get_syntax_catalog()
+    welcome_html = formatter.format_welcome_message()
+    await send_rich_message(event.input_chat, welcome_html)
 
+@client.on(events.NewMessage(pattern='/sintaxe'))
+async def syntax_handler(event):
+    catalog = formatter.get_syntax_catalog()
     rows = []
     row = []
-    # Mostrando apenas alguns no botão para não sobrecarregar, mas o catálogo completo está no código
-    for i, (name, url) in enumerate(list(catalog.items())[:10]):
+    # Limitando a exibição no menu, mas o bot processa qualquer entrada
+    for name, url in list(catalog.items())[:20]:
         row.append(types.KeyboardButtonUrl(name, url))
         if len(row) == 2:
             rows.append(types.KeyboardButtonRow(row))
@@ -47,7 +50,12 @@ async def start_handler(event):
     if row:
         rows.append(types.KeyboardButtonRow(row))
 
-    await send_rich_message(event.input_chat, welcome_text, reply_markup=types.ReplyInlineMarkup(rows))
+    await client.send_message(
+        event.input_chat,
+        "<b>Catálogo de Sintaxes Suportadas:</b>\n(Exibindo as principais)",
+        buttons=rows,
+        parse_mode='html'
+    )
 
 @client.on(events.NewMessage(func=lambda e: not e.text.startswith('/')))
 async def message_handler(event):
@@ -62,59 +70,55 @@ async def inline_handler(event):
     results = []
 
     if not query:
+        # Sugestões iniciais de templates
         results = [
             builder.article(
                 "Template Slideshow",
-                text="Clique para criar um Slideshow",
-                description="Usa o novo formato <tg-slideshow>",
-                link_preview=False
+                text="<tg-slideshow>\n<img src='https://telegram.org/img/t_logo.png'/>\n<img src='https://telegram.org/img/t_logo.png'/>\n<figcaption>Exemplo de Slideshow</figcaption>\n</tg-slideshow>",
+                description="Cria um carrossel de imagens rico",
+                parse_mode='html'
             ),
             builder.article(
                 "Template Colagem",
-                text="Clique para criar uma Colagem",
-                description="Usa o novo formato <tg-collage>",
-                link_preview=False
+                text="<tg-collage>\n<img src='https://telegram.org/img/t_logo.png'/>\n<img src='https://telegram.org/img/t_logo.png'/>\n<figcaption>Exemplo de Colagem</figcaption>\n</tg-collage>",
+                description="Cria uma grade de imagens rica",
+                parse_mode='html'
             )
         ]
     elif re.match(r'https?://\S+', query):
-        # Para links, sugerimos slideshow ou colagem
+        # Reconhecimento de links para sugerir mídia rica
         results = [
             builder.article(
                 "Visualizar como Slideshow",
-                text=f"<tg-slideshow>\n{query}\n</tg-slideshow>",
-                description="Adiciona o link em um slideshow rico"
+                text=f"<tg-slideshow>\n<img src='{query}'/>\n<figcaption>Link visualizado como Slide</figcaption>\n</tg-slideshow>",
+                description="Envolve o link em um carrossel rico",
+                parse_mode='html'
             ),
             builder.article(
                 "Visualizar como Colagem",
-                text=f"<tg-collage>\n{query}\n</tg-collage>",
-                description="Adiciona o link em uma colagem rica"
+                text=f"<tg-collage>\n<img src='{query}'/>\n<figcaption>Link visualizado como Colagem</figcaption>\n</tg-collage>",
+                description="Envolve o link em uma grade rica",
+                parse_mode='html'
             )
         ]
     else:
+        # Formatação genérica
         results = [
             builder.article(
                 "Formatar como Rich Message",
-                text=query,
-                description="Envia o texto usando a nova formatação rica"
+                text=formatter.to_rich_html(query),
+                description="Envia o texto formatado como Rich HTML",
+                parse_mode='html'
             )
         ]
 
-    # Para usar Rich Message em Inline, precisaríamos de SetInlineBotResultsLayer227Request
-    # No entanto, os resultados do Telethon Builder são objetos padrão.
-    # Vamos tentar converter os resultados para usarem InputBotInlineMessageRichMessage
-
-    final_results = []
-    for r in results:
-        # Aqui simulamos a conversão para o tipo rico se necessário
-        # Por simplicidade, enviamos como estão, mas o bot poderia interceptar
-        final_results.append(r)
-
     try:
+        # Tentar enviar via SetInlineBotResults rico se possível
         await client(functions.InvokeWithLayerRequest(
             layer=227,
             query=SetInlineBotResultsLayer227Request(
                 query_id=event.id,
-                results=final_results,
+                results=results,
                 cache_time=0
             )
         ))
@@ -123,6 +127,6 @@ async def inline_handler(event):
         await event.answer(results)
 
 if __name__ == '__main__':
-    print("Bot iniciado...")
+    print("Bot iniciado com suporte a Rich HTML...")
     client.start(bot_token=config.BOT_TOKEN)
     client.run_until_disconnected()

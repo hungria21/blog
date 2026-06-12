@@ -15,25 +15,48 @@ class InputRichMessageMarkdown(TLObject):
 
     def _bytes(self):
         flags = 0
-        if self.photos:
-            flags |= 1
-        if self.documents:
-            flags |= 2
-        if self.rtl:
-            flags |= 4
+        if self.photos: flags |= 1
+        if self.documents: flags |= 2
+        if self.rtl: flags |= 4
 
         res = [struct.pack('<I', self.CONSTRUCTOR_ID), struct.pack('<I', flags)]
         res.append(self.serialize_bytes(self.markdown))
         if self.photos:
-            res.append(struct.pack('<I', 0x1cb5c415)) # Vector
+            res.append(struct.pack('<I', 0x1cb5c415))
             res.append(struct.pack('<i', len(self.photos)))
-            for p in self.photos:
-                res.append(p._bytes())
+            for p in self.photos: res.append(p._bytes())
         if self.documents:
-            res.append(struct.pack('<I', 0x1cb5c415)) # Vector
+            res.append(struct.pack('<I', 0x1cb5c415))
             res.append(struct.pack('<i', len(self.documents)))
-            for d in self.documents:
-                res.append(d._bytes())
+            for d in self.documents: res.append(d._bytes())
+        return b''.join(res)
+
+class InputRichMessageHtml(TLObject):
+    CONSTRUCTOR_ID = 0x32133a20
+    SUBCLASS_OF_ID = 0x5198eb53
+
+    def __init__(self, html, photos=None, documents=None, rtl=False):
+        self.html = html
+        self.photos = photos or []
+        self.documents = documents or []
+        self.rtl = rtl
+
+    def _bytes(self):
+        flags = 0
+        if self.photos: flags |= 1
+        if self.documents: flags |= 2
+        if self.rtl: flags |= 4
+
+        res = [struct.pack('<I', self.CONSTRUCTOR_ID), struct.pack('<I', flags)]
+        res.append(self.serialize_bytes(self.html))
+        if self.photos:
+            res.append(struct.pack('<I', 0x1cb5c415))
+            res.append(struct.pack('<i', len(self.photos)))
+            for p in self.photos: res.append(p._bytes())
+        if self.documents:
+            res.append(struct.pack('<I', 0x1cb5c415))
+            res.append(struct.pack('<i', len(self.documents)))
+            for d in self.documents: res.append(d._bytes())
         return b''.join(res)
 
 class SendMessageLayer227Request(TLRequest):
@@ -49,19 +72,15 @@ class SendMessageLayer227Request(TLRequest):
 
     def _bytes(self):
         flags = 0x4000000 # Rich message flag
-        if self.reply_to:
-            flags |= 1
-        if self.reply_markup:
-            flags |= 64
+        if self.reply_to: flags |= 1
+        if self.reply_markup: flags |= 64
 
         res = [struct.pack('<I', self.CONSTRUCTOR_ID), struct.pack('<I', flags)]
         res.append(self.peer._bytes())
-        if self.reply_to:
-            res.append(self.reply_to._bytes())
+        if self.reply_to: res.append(self.reply_to._bytes())
         res.append(struct.pack('<q', struct.unpack('<q', struct.pack('<Q', self.random_id))[0]))
-        res.append(self.serialize_bytes("")) # message is empty when rich_message is present
-        if self.reply_markup:
-            res.append(self.reply_markup._bytes())
+        res.append(self.serialize_bytes(""))
+        if self.reply_markup: res.append(self.reply_markup._bytes())
         res.append(self.rich_message._bytes())
         return b''.join(res)
 
@@ -75,12 +94,10 @@ class InputBotInlineMessageRichMessage(TLObject):
 
     def _bytes(self):
         flags = 1
-        if self.reply_markup:
-            flags |= 4
+        if self.reply_markup: flags |= 4
         res = [struct.pack('<I', self.CONSTRUCTOR_ID), struct.pack('<I', flags)]
         res.append(self.rich_message._bytes())
-        if self.reply_markup:
-            res.append(self.reply_markup._bytes())
+        if self.reply_markup: res.append(self.reply_markup._bytes())
         return b''.join(res)
 
 class SetInlineBotResultsLayer227Request(TLRequest):
@@ -106,12 +123,9 @@ class SetInlineBotResultsLayer227Request(TLRequest):
         res = [struct.pack('<I', self.CONSTRUCTOR_ID), struct.pack('<I', flags)]
         res.append(struct.pack('<Q', self.query_id))
         res.append(struct.pack('<i', self.cache_time))
-        res.append(struct.pack('<I', 0x1cb5c415)) # Vector
+        res.append(struct.pack('<I', 0x1cb5c415))
         res.append(struct.pack('<i', len(self.results)))
-        for r in self.results:
-            res.append(r._bytes())
-        if self.next_offset:
-            res.append(self.serialize_bytes(self.next_offset))
-        if self.switch_pm:
-            res.append(self.switch_pm._bytes())
+        for r in self.results: res.append(r._bytes())
+        if self.next_offset: res.append(self.serialize_bytes(self.next_offset))
+        if self.switch_pm: res.append(self.switch_pm._bytes())
         return b''.join(res)
