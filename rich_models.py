@@ -203,6 +203,22 @@ class Slideshow(RichElement):
         cap = f"<figcaption>{self.caption}</figcaption>" if self.caption else ""
         return f"<tg-slideshow>{items}{cap}</tg-slideshow>"
 
+class Details(RichElement):
+    def __init__(self, summary: RichText, content: List[RichElement], open: bool = False):
+        self.summary = summary
+        self.content = content
+        self.open = open
+
+    def to_markdown(self) -> str:
+        inner = "\n\n".join([e.to_markdown() for e in self.content])
+        open_attr = " open" if self.open else ""
+        return f"<details{open_attr}><summary>{self.summary.to_markdown()}</summary>\n\n{inner}\n\n</details>"
+
+    def to_html(self) -> str:
+        inner = "".join([e.to_html() for e in self.content])
+        open_attr = " open" if self.open else ""
+        return f"<details{open_attr}><summary>{self.summary.to_html()}</summary>{inner}</details>"
+
 class RichMessageBuilder:
     def __init__(self):
         self.elements: List[RichElement] = []

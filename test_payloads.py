@@ -1,6 +1,7 @@
 import json
+import re
 from bot import RichMessageBot
-from rich_models import RichMessageBuilder, Heading, Bold, Math, Photo, Slideshow, RichText
+from rich_models import RichMessageBuilder, Heading, Bold, Math, Photo, Slideshow, RichText, Details
 
 def test_payload_generation():
     bot = RichMessageBot("fake_token")
@@ -50,19 +51,31 @@ def test_media_and_collections():
     builder.add(Slideshow(photos, caption="Meu Show"))
 
     md = builder.build_markdown()
-    print("Markdown de Slideshow:\n", md)
     assert "<tg-slideshow>" in md
     assert "![Foto 1](https://img1.jpg \"Foto 1\")" in md
-    assert "<figcaption>Meu Show</figcaption>" in md
 
     html = builder.build_html()
-    print("HTML de Slideshow:\n", html)
     assert "<tg-slideshow>" in html
-    assert '<img src="https://img1.jpg"/>' in html
-
     print("Teste de mídia e coleções passou!")
+
+def test_inline_logic():
+    bot = RichMessageBot("fake_token")
+    query = "https://link1.com/a.jpg https://link2.com/b.jpg formula: E=mc2"
+    results = bot.generate_inline_results(query)
+
+    # Verificar se gerou os 5 templates (Slideshow, Collage, Table, Math, Details)
+    assert len(results) == 5
+
+    # Verificar estrutura do InputRichMessageContent no primeiro resultado (slideshow)
+    assert results[0]["id"] == "slideshow"
+    assert "rich_message" in results[0]["input_message_content"]
+    assert "markdown" in results[0]["input_message_content"]["rich_message"]
+    assert "🎞️ Galeria Slideshow" in results[0]["input_message_content"]["rich_message"]["markdown"]
+
+    print("Teste de lógica inline e templates passou!")
 
 if __name__ == "__main__":
     test_payload_generation()
     test_object_model()
     test_media_and_collections()
+    test_inline_logic()

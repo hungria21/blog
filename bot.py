@@ -1,8 +1,9 @@
 import requests
 import time
 import sys
+import re
 from config import BOT_TOKEN
-from rich_models import RichMessageBuilder, Heading, RichText, Photo, Slideshow
+from rich_models import RichMessageBuilder, Heading, RichText, Photo, Slideshow, Collage, Table, TableCell, Bold, Math, Details
 
 class RichMessageBot:
     """
@@ -108,6 +109,106 @@ class RichMessageBot:
 
         self.send_rich_message(chat_id, markdown=builder.build_markdown())
 
+    def answer_inline_query(self, inline_query_id, results):
+        url = f"{self.base_url}/answerInlineQuery"
+        payload = {
+            "inline_query_id": inline_query_id,
+            "results": results,
+            "cache_time": 60
+        }
+        try:
+            self.session.post(url, json=payload)
+        except Exception as e:
+            print(f"Erro ao responder query inline: {e}")
+
+    def generate_inline_results(self, query_text):
+        results = []
+        urls = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', query_text)
+
+        if len(urls) >= 2:
+            # 1. Template Slideshow
+            b_slideshow = RichMessageBuilder()
+            b_slideshow.add(Heading(RichText("🎞️ Galeria Slideshow"), level=2))
+            photos = [Photo(u) for u in urls[:10]]
+            b_slideshow.add(Slideshow(photos))
+
+            results.append({
+                "type": "article",
+                "id": "slideshow",
+                "title": "Criar SlideShow",
+                "description": f"Criar galeria com {len(urls)} links",
+                "input_message_content": {
+                    "rich_message": {"markdown": b_slideshow.build_markdown()}
+                }
+            })
+
+            # 2. Template Colagem
+            b_collage = RichMessageBuilder()
+            b_collage.add(Heading(RichText("🖼️ Colagem de Mídia"), level=2))
+            b_collage.add(Collage(photos))
+
+            results.append({
+                "type": "article",
+                "id": "collage",
+                "title": "Criar Colagem",
+                "description": "Exibir imagens em mosaico",
+                "input_message_content": {
+                    "rich_message": {"markdown": b_collage.build_markdown()}
+                }
+            })
+
+        # 3. Template Tabela Comparativa (mesmo sem links)
+        if query_text.strip():
+            b_table = RichMessageBuilder()
+            b_table.add(Heading(RichText("📊 Tabela de Dados"), level=2))
+            header = [TableCell(RichText("Item"), is_header=True), TableCell(RichText("Valor"), is_header=True)]
+            row = [TableCell(RichText(query_text[:20])), TableCell(RichText("Data: 2026"))]
+            b_table.add(Table([header, row]))
+
+            results.append({
+                "type": "article",
+                "id": "table",
+                "title": "Criar Tabela",
+                "description": f"Gerar tabela com: {query_text[:15]}...",
+                "input_message_content": {
+                    "rich_message": {"markdown": b_table.build_markdown()}
+                }
+            })
+
+            # 4. Template Nota Matemática
+            b_math = RichMessageBuilder()
+            b_math.add(Heading(RichText("🧮 Expressão Científica"), level=2))
+            b_math.add(Math(query_text, block=True))
+
+            results.append({
+                "type": "article",
+                "id": "math",
+                "title": "Converter para LaTeX",
+                "description": "Formatar como fórmula matemática",
+                "input_message_content": {
+                    "rich_message": {"markdown": b_math.build_markdown()}
+                }
+            })
+
+            # 5. Template Bloco Expansível
+            b_details = RichMessageBuilder()
+            b_details.add(Details(
+                summary=RichText(f"Informações sobre: {query_text[:10]}"),
+                content=[RichText(f"Aqui estão os detalhes completos sobre '{query_text}'. Este bloco pode conter muito texto e ser expandido pelo usuário.")]
+            ))
+
+            results.append({
+                "type": "article",
+                "id": "details",
+                "title": "Criar Bloco Expansível",
+                "description": "Conteúdo oculto que abre ao clicar",
+                "input_message_content": {
+                    "rich_message": {"markdown": b_details.build_markdown()}
+                }
+            })
+
+        return results
+
     def run(self):
         if self.token == "SEU_TOKEN_AQUI":
             print("Erro: Você esqueceu de configurar seu BOT_TOKEN no arquivo config.py!")
@@ -120,6 +221,8 @@ class RichMessageBot:
                 if updates and updates.get("ok"):
                     for update in updates["result"]:
                         self.offset = update["update_id"] + 1
+
+                        # Mensagens privadas
                         if "message" in update:
                             msg = update["message"]
                             chat_id = msg["chat"]["id"]
@@ -134,6 +237,12 @@ class RichMessageBot:
                             elif text:
                                 echo = f"### Recebido:\n\n> {text}\n\n*Processado com sucesso.*"
                                 self.send_rich_message(chat_id, markdown=echo)
+
+                        # Modo Inline
+                        elif "inline_query" in update:
+                            query = update["inline_query"]
+                            results = self.generate_inline_results(query["query"])
+                            self.answer_inline_query(query["id"], results)
 
                 # Pequena pausa entre iterações se não houver updates para aliviar a CPU
                 if updates and not updates["result"]:

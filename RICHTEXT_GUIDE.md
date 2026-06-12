@@ -150,7 +150,24 @@ markdown_text = builder.build_markdown()
 bot.send_rich_message(chat_id, markdown=markdown_text)
 ```
 
-## 5. API Reference (Bot API 10.1)
+---
+
+## 5. Modo Inline
+
+O bot suporta o modo inline para transformar links e textos em Rich Messages instantaneamente através de templates pré-configurados.
+
+### Como usar:
+1. Em qualquer chat, digite `@NomeDoSeuBot <comando ou links>`.
+2. Escolha uma das opções:
+   - **Criar SlideShow:** Se você colar 2 ou mais links de imagens.
+   - **Criar Colagem:** Se você colar 2 ou mais links de imagens.
+   - **Criar Tabela:** Digite qualquer texto para gerar uma linha de dados.
+   - **Converter para LaTeX:** Digite uma fórmula científica.
+   - **Criar Bloco Expansível:** Digite o conteúdo que deseja ocultar.
+
+---
+
+## 6. API Reference (Bot API 10.1)
 
 Para enviar uma Rich Message via API:
 **Método:** `sendRichMessage`
