@@ -1,86 +1,65 @@
 # Guia Mestre de Formatação: Rich Messages (Bot API 10.1)
 
-Este guia contém todas as informações sobre as "Rich Messages" (Junho 2026) e o Catálogo de Dialetos Markdown suportados.
+Este documento é a referência completa para o uso do bot e das novas funcionalidades de formatação estruturada do Telegram.
 
 ---
 
-## 1. Rich Markdown (Novos Recursos)
+## 1. Como Usar o Bot
 
-O Telegram v10.1 expandiu o Markdown para suportar estruturas complexas.
+### Modo Direto
+Envie qualquer texto formatado em Markdown para o bot em uma conversa privada. Ele responderá processando esse texto através do novo motor de **Rich Messages**.
 
-### Cabeçalhos, Tabelas e Fórmulas
-- **Headings:** `# Nível 1` até `###### Nível 6`
+### Modo Inline
+Em qualquer chat, digite `@SeuBot <links ou texto>`:
+- **🎞️ SlideShow:** Aparece automaticamente ao colar 2 ou mais links de imagens.
+- **📊 Tabela:** Gera uma tabela rápida a partir do texto digitado.
+- **📝 Texto Simples:** Fallback de segurança para mensagens rápidas.
+
+---
+
+## 2. Sintaxes Suportadas (Rich Markdown)
+
+### Estruturas Nativas
+- **Cabeçalhos:** `# H1` até `###### H6`
 - **Tabelas:**
-```markdown
-| Recurso | Descrição |
-|:---|:---:|
-| Tabelas | Nativas e Alinhadas |
-| LaTeX | $E = mc^2$ |
-```
-- **Matemática:** `$inline$` ou `$$bloco$$`. Suporta também blocos ` ```math `.
-- **Checklists:** `- [ ] Pendente` e `- [x] Concluído`.
+  ```markdown
+  | Coluna A | Coluna B |
+  |:--- |:---:|
+  | Dado 1 | Centralizado |
+  ```
+- **Matemática (LaTeX):** `$x+y$` ou `$$E=mc^2$$`
+- **Checklists:** `- [ ] Fazer café` e `- [x] Beber café`
 
-### Blocos Especiais
+### Blocos Complexos (HTML aninhado)
 - **Mapas:** `<tg-map lat="41.9" long="12.5" zoom="14"/>`
-- **Slideshow:**
-```html
-<tg-slideshow>
-![](URL1)
-![](URL2)
-<figcaption>Legenda do Slide</figcaption>
-</tg-slideshow>
-```
-- **Detalhes (Expandível):**
-```html
-<details>
-  <summary>Clique aqui</summary>
-  Conteúdo oculto.
-</details>
-```
+- **SlideShow:**
+  ```html
+  <tg-slideshow>
+    ![](URL1)
+    ![](URL2)
+  </tg-slideshow>
+  ```
+- **Detalhes:** `<details><summary>Spoiler</summary>Conteúdo</details>`
 
 ---
 
-## 2. Catálogo de Sintaxes e Dialetos
+## 3. Catálogo de Dialetos (50+)
 
-### Base e Padronização
-- [Markdown Original](https://daringfireball.net/projects/markdown/)
-- [CommonMark](https://commonmark.org/)
-- [GFM (GitHub)](https://github.github.com/gfm/)
+O bot é compatível com a maioria das extensões Markdown modernas:
 
-### Ecossistema e Parsers
-- [Markdown-it](https://github.com/markdown-it/markdown-it)
-- [Remark](https://remark.js.org/)
-- [Pandoc](https://pandoc.org/)
-- [Mistune (Python)](https://python-markdown.github.io/)
-
-### Científico e Documentação
-- [LaTeX](https://www.latex-project.org/)
-- [MDX](https://mdxjs.com/)
-- [Quarto](https://quarto.org/)
-- [Docusaurus](https://docusaurus.io/)
-- [MkDocs](https://www.mkdocs.org/)
-
-### Outras Linguagens Poderosas
-- [AsciiDoc](https://asciidoc.org/)
-- [reStructuredText](https://docutils.sourceforge.io/rst.html)
-- [Org Mode](https://orgmode.org/)
-- [Typst](https://typst.app/)
-- [Djot](https://djot.net/)
+| Categoria | Exemplos de Dialetos |
+|:--- |:--- |
+| **Base** | Original, CommonMark, GFM (GitHub) |
+| **Científico** | LaTeX, R Markdown, Quarto, Jupyter |
+| **Documentação** | MkDocs, Docusaurus, Hugo, Jekyll |
+| **Parsers** | Markdown-it, Remark, Pandoc, Mistune |
+| **Anotações** | Obsidian, Logseq, Joplin, Zettlr |
+| **Chat** | Discord, Slack, Reddit, Telegram V2 |
 
 ---
 
-## 3. Guia de Referência Rápida (Boas-vindas)
-
-Ao iniciar o bot, você terá acesso rápido a:
-1. **Guia de referência Markdown:** Referência universal.
-2. **Guia de formatação do Telegram:** Regras específicas da plataforma.
-3. **GEM para auxílio:** Ferramentas de suporte à escrita.
-4. **Estilo de IA:** Conversão inteligente para Markdown.
-
----
-
-## 4. Limites Técnicos
-- 32.768 caracteres por mensagem.
-- 500 blocos de conteúdo.
-- 16 níveis de aninhamento.
-- 50 mídias por colagem/slideshow.
+## 4. Referências Rápidas
+- [Guia de referência Markdown](https://commonmark.org/help/)
+- [Guia de formatação do Telegram](https://core.telegram.org/bots/api#formatting-options)
+- [Projeto LaTeX](https://www.latex-project.org/)
+- [GitHub Flavored Markdown](https://github.github.com/gfm/)

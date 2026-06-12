@@ -2,376 +2,155 @@ import requests
 import time
 import sys
 import re
-import hashlib
+import uuid
 from config import BOT_TOKEN
-from rich_models import RichMessageBuilder, Heading, RichText, Photo, Slideshow, Collage, Table, TableCell, Bold, Math, Details, Map
+from rich_models import RichMessageBuilder, Heading, RichText, Photo, Slideshow, Collage, Table, TableCell, Bold
 from dialects import MARKDOWN_CATALOG
 
 class RichMessageBot:
-    """
-    Implementação de um bot para a versão 10.1 da API de Bots do Telegram.
-    Focada no novo recurso de 'Rich Messages', com conexão robusta.
-    """
     def __init__(self, token):
         self.token = token
         self.base_url = f"https://api.telegram.org/bot{token}"
         self.offset = 0
         self.session = requests.Session()
-        self.session.headers.update({
-            "User-Agent": "RichMessageBot/10.1 (Python Requests Robust Version)"
-        })
-
-    def send_rich_message(self, chat_id, markdown=None, html=None, is_rtl=False, skip_detection=False):
-        """
-        Envia uma Rich Message usando o novo método da API 10.1.
-        """
-        url = f"{self.base_url}/sendRichMessage"
-
-        rich_message = {
-            "is_rtl": is_rtl,
-            "skip_entity_detection": skip_detection
-        }
-
-        if markdown:
-            rich_message["markdown"] = markdown
-        elif html:
-            rich_message["html"] = html
-        else:
-            raise ValueError("É necessário fornecer 'markdown' ou 'html' no objeto rich_message.")
-
-        payload = {
-            "chat_id": chat_id,
-            "rich_message": rich_message
-        }
-
-        try:
-            response = self.session.post(url, json=payload, timeout=10)
-            response_json = response.json()
-            if not response_json.get("ok"):
-                print(f"Aviso da API: {response_json.get('description')}")
-            return response_json
-        except requests.exceptions.RequestException as e:
-            print(f"Erro de rede ao enviar Rich Message: {e}")
-            return None
+        self.session.headers.update({"User-Agent": "RichMessageBot/10.1"})
 
     def get_updates(self):
         url = f"{self.base_url}/getUpdates"
         params = {"offset": self.offset, "timeout": 20}
         try:
-            # Long polling com timeout maior no requests para evitar aborts prematuros
-            response = self.session.get(url, params=params, timeout=25)
-            return response.json()
-        except requests.exceptions.ConnectionError as e:
-            print(f"Erro de conexão (abortado?): {e}. Tentando novamente em 5 segundos...")
-            time.sleep(5)
-            return None
-        except requests.exceptions.Timeout:
-            # Timeout normal do long polling, não é erro
-            return {"ok": True, "result": []}
+            resp = self.session.get(url, params=params, timeout=25).json()
+            return resp
         except Exception as e:
-            print(f"Erro inesperado ao buscar updates: {e}")
+            print(f"Erro Polling: {e}")
             return None
 
     def handle_start(self, chat_id):
+        # Texto simplificado exatamente como pedido
         text = (
             "Links e referências rápidas:\n"
             "• Guia de referência Markdown\n"
             "• Guia de formatação do Telegram\n"
             "• GEM para auxiliar na formatação\n"
-            "• Adicionar estilo de IA no Telegram\n\n"
-            "Clique no botão abaixo para ver as referências detalhadas."
+            "• Adicionar estilo de IA no Telegram (Ajuda a expandir/converter texto comum em Markdown)"
         )
-
-        keyboard = [[{"text": "📚 Ver Referências e Dialetos", "callback_data": "show_refs"}]]
-
-        url = f"{self.base_url}/sendMessage" # Usando sendMessage simples para evitar bugs de carregamento
-        payload = {
+        keyboard = [[{"text": "📚 Ver Referências e Dialetos", "callback_data": "refs"}]]
+        self.session.post(f"{self.base_url}/sendMessage", json={
             "chat_id": chat_id,
             "text": text,
             "reply_markup": {"inline_keyboard": keyboard}
-        }
-        self.session.post(url, json=payload)
+        })
 
-    def handle_callback_query(self, callback_query):
-        data = callback_query["data"]
-        chat_id = callback_query["message"]["chat"]["id"]
-        cq_id = callback_query["id"]
+    def handle_callback(self, cq):
+        self.session.post(f"{self.base_url}/answerCallbackQuery", json={"callback_query_id": cq["id"]})
 
-        # Sempre responder a callback query IMEDIATAMENTE para parar o ícone de carregamento
-        try:
-            self.session.post(f"{self.base_url}/answerCallbackQuery", json={"callback_query_id": cq_id})
-        except Exception as e:
-            print(f"Erro ao responder callback query: {e}")
+        if cq["data"] == "refs":
+            msg_parts = ["📖 *Catálogo de Dialetos Markdown Suportados*\n"]
+            for category, items in MARKDOWN_CATALOG.items():
+                msg_parts.append(f"\n*[{category}]*")
+                for item in items[:5]: # Mostrar os 5 principais de cada para não exceder limites
+                    msg_parts.append(f"• [{item['name']}]({item['url']})")
 
-        if data == "show_refs":
-            refs_text = (
-                "📖 *Catálogo de Referências*\n\n"
-                "• [Markdown Original](https://daringfireball.net/projects/markdown/)\n"
-                "• [CommonMark](https://commonmark.org/)\n"
-                "• [GitHub Flavored](https://github.github.com/gfm/)\n"
-                "• [Telegram Bot API](https://core.telegram.org/bots/api)\n"
-                "• [LaTeX Project](https://www.latex-project.org/)\n\n"
-                "Consulte o arquivo `RICHTEXT_GUIDE.md` no repositório para o catálogo completo de 50+ dialetos."
-            )
-            # Enviar como mensagem normal para garantir compatibilidade
-            url = f"{self.base_url}/sendMessage"
-            payload = {
-                "chat_id": chat_id,
-                "text": refs_text,
-                "parse_mode": "Markdown"
-            }
-            self.session.post(url, json=payload)
+            msg_parts.append("\n\n_Para a lista completa com mais de 50 dialetos, veja o arquivo RICHTEXT_GUIDE.md_")
 
-    def handle_demo(self, chat_id):
-        demo_markdown = (
-            "# 📊 Demonstração de Rich Messages\n\n"
-            "## 1. Tabelas Nativas\n"
-            "| Recurso | Status | Estabilidade |\n"
-            "|:---|:---:|:---:|\n"
-            "| Tabelas | ✅ OK | Pro |\n"
-            "| Sessão | ✅ OK | Alta |\n\n"
-            "## 2. LaTeX\n"
-            "$$e^{i\\pi} + 1 = 0$$\n\n"
-            "--- \n"
-            "<footer>Conexão Robustecida via requests.Session</footer>"
-        )
-        self.send_rich_message(chat_id, markdown=demo_markdown)
+            full_msg = "\n".join(msg_parts)
+            self.session.post(f"{self.base_url}/sendMessage", json={
+                "chat_id": cq["message"]["chat"]["id"],
+                "text": full_msg,
+                "parse_mode": "Markdown",
+                "disable_web_page_preview": True
+            })
 
-    def handle_slideshow(self, chat_id):
-        """
-        Cria um Slideshow usando os links fornecidos.
-        """
-        builder = RichMessageBuilder()
-        builder.add(Heading(RichText("🎞️ Meu SlideShow"), level=1))
-
-        photos = [
-            Photo("https://i.ibb.co/jP0Jcgwz/file-529.jpg", caption="Primeira Imagem"),
-            Photo("https://i.ibb.co/KpDX3N4m/file-530.jpg", caption="Segunda Imagem")
-        ]
-
-        builder.add(Slideshow(photos, caption="Coleção de Fotos do Usuário"))
-
-        self.send_rich_message(chat_id, markdown=builder.build_markdown())
-
-    def answer_inline_query(self, inline_query_id, results):
-        url = f"{self.base_url}/answerInlineQuery"
-        payload = {
-            "inline_query_id": inline_query_id,
-            "results": results,
-            "cache_time": 60
-        }
-        try:
-            self.session.post(url, json=payload)
-        except Exception as e:
-            print(f"Erro ao responder query inline: {e}")
-
-    def generate_inline_results(self, query_text):
+    def generate_inline(self, query):
         results = []
-        # Identifica URLs no texto da query
-        urls = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', query_text)
+        urls = re.findall(r'https?://\S+', query)
 
         if len(urls) >= 2:
-            # 1. Template Slideshow
-            b_slideshow = RichMessageBuilder()
-            b_slideshow.add(Heading(RichText("🎞️ Galeria Slideshow"), level=2))
-            photos = [Photo(u) for u in urls[:10]]
-            b_slideshow.add(Slideshow(photos))
-
+            # Slideshow
+            b_ss = RichMessageBuilder()
+            b_ss.add(Heading(RichText("🎞️ SlideShow"), level=2))
+            b_ss.add(Slideshow([Photo(u) for u in urls[:10]]))
             results.append({
                 "type": "article",
-                "id": "slideshow",
-                "title": "Criar SlideShow",
-                "description": f"Criar galeria com {len(urls)} links",
+                "id": str(uuid.uuid4()),
+                "title": "🎞️ Criar SlideShow",
                 "input_message_content": {
-                    "rich_message": {
-                        "markdown": b_slideshow.build_markdown()
-                    }
+                    "rich_message": {"markdown": b_ss.build_markdown()}
                 }
             })
 
-            # 2. Template Colagem
-            b_collage = RichMessageBuilder()
-            b_collage.add(Heading(RichText("🖼️ Colagem de Mídia"), level=2))
-            b_collage.add(Collage(photos))
-
+            # Collage
+            b_co = RichMessageBuilder()
+            b_co.add(Heading(RichText("🖼️ Colagem"), level=2))
+            b_co.add(Collage([Photo(u) for u in urls[:10]]))
             results.append({
                 "type": "article",
-                "id": "collage",
-                "title": "Criar Colagem",
-                "description": "Exibir imagens em mosaico",
+                "id": str(uuid.uuid4()),
+                "title": "🖼️ Criar Colagem",
                 "input_message_content": {
-                    "rich_message": {
-                        "markdown": b_collage.build_markdown()
-                    }
+                    "rich_message": {"markdown": b_co.build_markdown()}
                 }
             })
 
-        # 3. Template Tabela Comparativa (mesmo sem links)
-        if query_text.strip():
-            b_table = RichMessageBuilder()
-            b_table.add(Heading(RichText("📊 Tabela de Dados"), level=2))
-            header = [TableCell(RichText("Item"), is_header=True), TableCell(RichText("Valor"), is_header=True)]
-            row = [TableCell(RichText(query_text[:20])), TableCell(RichText("Data: 2026"))]
-            b_table.add(Table([header, row]))
-
+        if query.strip():
+            # Tabela
+            b = RichMessageBuilder()
+            b.add(Table([[TableCell(RichText(Bold("Texto"))), TableCell(RichText(query[:30]))]]))
             results.append({
                 "type": "article",
-                "id": "table",
-                "title": "Criar Tabela",
-                "description": f"Gerar tabela com: {query_text[:15]}...",
+                "id": str(uuid.uuid4()),
+                "title": "📊 Criar Tabela",
                 "input_message_content": {
-                    "rich_message": {
-                        "markdown": b_table.build_markdown()
-                    }
+                    "rich_message": {"markdown": b.build_markdown()}
                 }
             })
 
-            # 4. Template Nota Matemática
-            b_math = RichMessageBuilder()
-            b_math.add(Heading(RichText("🧮 Expressão Científica"), level=2))
-            b_math.add(Math(query_text, block=True))
-
+            # Fallback Simples (Sempre funciona se o Rich Message falhar)
             results.append({
                 "type": "article",
-                "id": "math",
-                "title": "Converter para LaTeX",
-                "description": "Formatar como fórmula matemática",
+                "id": str(uuid.uuid4()),
+                "title": "📝 Texto Simples",
                 "input_message_content": {
-                    "rich_message": {
-                        "markdown": b_math.build_markdown()
-                    }
+                    "message_text": f"Formatado: {query}",
+                    "parse_mode": "Markdown"
                 }
             })
-
-            # 5. Template Bloco Expansível
-            b_details = RichMessageBuilder()
-            b_details.add(Details(
-                summary=RichText(f"Detalhes de: {query_text[:15]}..."),
-                content=[RichText(f"Conteúdo expandido para: {query_text}")]
-            ))
-
-            results.append({
-                "type": "article",
-                "id": "details",
-                "title": "Criar Bloco Expansível",
-                "description": "Conteúdo oculto que abre ao clicar",
-                "input_message_content": {
-                    "rich_message": {
-                        "markdown": b_details.build_markdown()
-                    }
-                }
-            })
-
-            # 6. Template Ficha Técnica
-            b_info = RichMessageBuilder()
-            b_info.add(Heading(RichText(f"📋 Ficha: {query_text[:15]}"), level=2))
-            b_info.add(Table([
-                [TableCell(RichText("Propriedade"), is_header=True), TableCell(RichText("Descrição"), is_header=True)],
-                [TableCell(RichText("Nome")), TableCell(RichText(query_text[:20]))],
-                [TableCell(RichText("Tipo")), TableCell(RichText("Objeto Rich"))],
-                [TableCell(RichText("Versão")), TableCell(RichText("API 10.1"))]
-            ]))
-
-            results.append({
-                "type": "article",
-                "id": "info_sheet",
-                "title": "Criar Ficha Técnica",
-                "description": "Tabela estruturada de informações",
-                "input_message_content": {
-                    "rich_message": {
-                        "markdown": b_info.build_markdown()
-                    }
-                }
-            })
-
-            # 7. Template Aviso Importante
-            b_warn = RichMessageBuilder()
-            b_warn.add(Heading(RichText("⚠️ AVISO IMPORTANTE"), level=1))
-            b_warn.add(RichText([Bold("Atenção: "), query_text]))
-
-            results.append({
-                "type": "article",
-                "id": "warning",
-                "title": "Criar Alerta",
-                "description": "Mensagem de destaque com cabeçalho",
-                "input_message_content": {
-                    "rich_message": {
-                        "markdown": b_warn.build_markdown()
-                    }
-                }
-            })
-
-            # 8. Template Mapa de Localização
-            b_map = RichMessageBuilder()
-            b_map.add(Heading(RichText("📍 Localização do Evento"), level=2))
-            b_map.add(Map(lat=-23.5505, long=-46.6333, zoom=15, caption="Centro de São Paulo"))
-
-            results.append({
-                "type": "article",
-                "id": "location_map",
-                "title": "Enviar Mapa Rich",
-                "description": "Mapa interativo com legenda",
-                "input_message_content": {
-                    "rich_message": {
-                        "markdown": b_map.build_markdown()
-                    }
-                }
-            })
-
         return results
 
     def run(self):
-        if self.token == "SEU_TOKEN_AQUI":
-            print("Erro: Você esqueceu de configurar seu BOT_TOKEN no arquivo config.py!")
-            sys.exit(1)
+        print("Bot 10.1 iniciado...")
+        while True:
+            upds = self.get_updates()
+            if upds and upds.get("ok"):
+                for u in upds["result"]:
+                    self.offset = u["update_id"] + 1
 
-        print("RichMessageBot v10.1 (Versão Robusta) iniciado... Ctrl+C para parar.")
-        try:
-            while True:
-                updates = self.get_updates()
-                if updates and updates.get("ok"):
-                    for update in updates["result"]:
-                        self.offset = update["update_id"] + 1
+                    if "message" in u:
+                        m = u["message"]
+                        print(f"Update: Mensagem de {m['chat']['id']}")
+                        if m.get("text") == "/start": self.handle_start(m["chat"]["id"])
+                        elif m.get("text"):
+                            # Echo direto como Rich Message
+                            requests.post(f"{self.base_url}/sendRichMessage", json={
+                                "chat_id": m["chat"]["id"],
+                                "rich_message": {"markdown": m["text"]}
+                            })
 
-                        # Debug: Mostrar o tipo de update recebido
-                        update_type = list(update.keys())[-1]
-                        print(f"Update recebido: {update_type} (ID: {update['update_id']})")
+                    elif "inline_query" in u:
+                        iq = u["inline_query"]
+                        print(f"Update: Inline Query '{iq['query']}'")
+                        res = self.generate_inline(iq["query"])
+                        requests.post(f"{self.base_url}/answerInlineQuery", json={
+                            "inline_query_id": iq["id"], "results": res
+                        })
 
-                        # Mensagens privadas
-                        if "message" in update:
-                            msg = update["message"]
-                            chat_id = msg["chat"]["id"]
-                            text = msg.get("text", "")
-
-                            if text == "/start":
-                                self.handle_start(chat_id)
-                            elif text == "/demo":
-                                self.handle_demo(chat_id)
-                            elif text == "/slideshow":
-                                self.handle_slideshow(chat_id)
-                            elif text:
-                                # Envia o texto puro como Rich Message para permitir testes de formatação manual
-                                self.send_rich_message(chat_id, markdown=text)
-
-                        # Modo Inline
-                        elif "inline_query" in update:
-                            query = update["inline_query"]
-                            results = self.generate_inline_results(query["query"])
-                            self.answer_inline_query(query["id"], results)
-
-                        # Callback Queries (Teclado Inline)
-                        elif "callback_query" in update:
-                            self.handle_callback_query(update["callback_query"])
-
-                # Pequena pausa entre iterações se não houver updates para aliviar a CPU
-                if updates and not updates["result"]:
-                    time.sleep(0.5)
-
-        except KeyboardInterrupt:
-            print("\nBot parado pelo usuário.")
-        finally:
-            self.session.close()
+                    elif "callback_query" in u:
+                        print("Update: Callback Query")
+                        self.handle_callback(u["callback_query"])
+            time.sleep(0.1)
 
 if __name__ == "__main__":
-    bot = RichMessageBot(BOT_TOKEN)
-    bot.run()
+    if BOT_TOKEN == "SEU_TOKEN_AQUI":
+        print("Erro: Token não configurado.")
+        sys.exit(1)
+    RichMessageBot(BOT_TOKEN).run()
