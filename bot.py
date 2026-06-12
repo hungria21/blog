@@ -74,28 +74,20 @@ class RichMessageBot:
 
     def handle_start(self, chat_id):
         text = (
-            "# Bem-vindo ao RichBot v10.1! 🚀\n\n"
-            "Eu dou suporte a todas as sintaxes e dialetos de Markdown através do novo recurso de **Rich Messages**.\n\n"
-            "Escolha uma categoria abaixo para ver guias e referências:"
+            "Links e referências rápidas:\n"
+            "• Guia de referência Markdown\n"
+            "• Guia de formatação do Telegram\n"
+            "• GEM para auxiliar na formatação\n"
+            "• Adicionar estilo de IA no Telegram\n\n"
+            "Clique no botão abaixo para ver as referências detalhadas."
         )
 
-        # Criar teclado inline com as categorias do catálogo
-        keyboard = []
-        row = []
-        for category in MARKDOWN_CATALOG.keys():
-            # Usar hash da categoria para o callback_data (limite de 64 bytes)
-            cat_id = hashlib.md5(category.encode()).hexdigest()[:10]
-            row.append({"text": category, "callback_data": f"cat_{cat_id}"})
-            if len(row) == 2:
-                keyboard.append(row)
-                row = []
-        if row:
-            keyboard.append(row)
+        keyboard = [[{"text": "📚 Ver Referências e Dialetos", "callback_data": "show_refs"}]]
 
-        url = f"{self.base_url}/sendRichMessage"
+        url = f"{self.base_url}/sendMessage" # Usando sendMessage simples para evitar bugs de carregamento
         payload = {
             "chat_id": chat_id,
-            "rich_message": {"markdown": text},
+            "text": text,
             "reply_markup": {"inline_keyboard": keyboard}
         }
         self.session.post(url, json=payload)
@@ -111,28 +103,24 @@ class RichMessageBot:
         except Exception as e:
             print(f"Erro ao responder callback query: {e}")
 
-        if data.startswith("cat_"):
-            target_cat_id = data[4:]
-            selected_category = None
-            for category in MARKDOWN_CATALOG.keys():
-                if hashlib.md5(category.encode()).hexdigest()[:10] == target_cat_id:
-                    selected_category = category
-                    break
-
-            if selected_category:
-                links = MARKDOWN_CATALOG[selected_category]
-                builder = RichMessageBuilder()
-                builder.add(Heading(RichText(f"📚 {selected_category}"), level=2))
-
-                rows = [[TableCell(RichText("Nome"), is_header=True), TableCell(RichText("Link"), is_header=True)]]
-                for item in links:
-                    rows.append([
-                        TableCell(RichText(item["name"])),
-                        TableCell(RichText(f"[Site]({item['url']})"))
-                    ])
-
-                builder.add(Table(rows))
-                self.send_rich_message(chat_id, markdown=builder.build_markdown())
+        if data == "show_refs":
+            refs_text = (
+                "📖 *Catálogo de Referências*\n\n"
+                "• [Markdown Original](https://daringfireball.net/projects/markdown/)\n"
+                "• [CommonMark](https://commonmark.org/)\n"
+                "• [GitHub Flavored](https://github.github.com/gfm/)\n"
+                "• [Telegram Bot API](https://core.telegram.org/bots/api)\n"
+                "• [LaTeX Project](https://www.latex-project.org/)\n\n"
+                "Consulte o arquivo `RICHTEXT_GUIDE.md` no repositório para o catálogo completo de 50+ dialetos."
+            )
+            # Enviar como mensagem normal para garantir compatibilidade
+            url = f"{self.base_url}/sendMessage"
+            payload = {
+                "chat_id": chat_id,
+                "text": refs_text,
+                "parse_mode": "Markdown"
+            }
+            self.session.post(url, json=payload)
 
     def handle_demo(self, chat_id):
         demo_markdown = (
@@ -179,6 +167,7 @@ class RichMessageBot:
 
     def generate_inline_results(self, query_text):
         results = []
+        # Identifica URLs no texto da query
         urls = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', query_text)
 
         if len(urls) >= 2:
@@ -195,9 +184,7 @@ class RichMessageBot:
                 "description": f"Criar galeria com {len(urls)} links",
                 "input_message_content": {
                     "rich_message": {
-                        "markdown": b_slideshow.build_markdown(),
-                        "is_rtl": False,
-                        "skip_entity_detection": False
+                        "markdown": b_slideshow.build_markdown()
                     }
                 }
             })
@@ -214,9 +201,7 @@ class RichMessageBot:
                 "description": "Exibir imagens em mosaico",
                 "input_message_content": {
                     "rich_message": {
-                        "markdown": b_collage.build_markdown(),
-                        "is_rtl": False,
-                        "skip_entity_detection": False
+                        "markdown": b_collage.build_markdown()
                     }
                 }
             })
@@ -236,9 +221,7 @@ class RichMessageBot:
                 "description": f"Gerar tabela com: {query_text[:15]}...",
                 "input_message_content": {
                     "rich_message": {
-                        "markdown": b_table.build_markdown(),
-                        "is_rtl": False,
-                        "skip_entity_detection": False
+                        "markdown": b_table.build_markdown()
                     }
                 }
             })
@@ -255,9 +238,7 @@ class RichMessageBot:
                 "description": "Formatar como fórmula matemática",
                 "input_message_content": {
                     "rich_message": {
-                        "markdown": b_math.build_markdown(),
-                        "is_rtl": False,
-                        "skip_entity_detection": False
+                        "markdown": b_math.build_markdown()
                     }
                 }
             })
@@ -276,9 +257,7 @@ class RichMessageBot:
                 "description": "Conteúdo oculto que abre ao clicar",
                 "input_message_content": {
                     "rich_message": {
-                        "markdown": b_details.build_markdown(),
-                        "is_rtl": False,
-                        "skip_entity_detection": False
+                        "markdown": b_details.build_markdown()
                     }
                 }
             })
@@ -300,9 +279,7 @@ class RichMessageBot:
                 "description": "Tabela estruturada de informações",
                 "input_message_content": {
                     "rich_message": {
-                        "markdown": b_info.build_markdown(),
-                        "is_rtl": False,
-                        "skip_entity_detection": False
+                        "markdown": b_info.build_markdown()
                     }
                 }
             })
@@ -319,9 +296,7 @@ class RichMessageBot:
                 "description": "Mensagem de destaque com cabeçalho",
                 "input_message_content": {
                     "rich_message": {
-                        "markdown": b_warn.build_markdown(),
-                        "is_rtl": False,
-                        "skip_entity_detection": False
+                        "markdown": b_warn.build_markdown()
                     }
                 }
             })
@@ -338,9 +313,7 @@ class RichMessageBot:
                 "description": "Mapa interativo com legenda",
                 "input_message_content": {
                     "rich_message": {
-                        "markdown": b_map.build_markdown(),
-                        "is_rtl": False,
-                        "skip_entity_detection": False
+                        "markdown": b_map.build_markdown()
                     }
                 }
             })

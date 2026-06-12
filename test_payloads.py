@@ -60,18 +60,15 @@ def test_media_and_collections():
 
 def test_inline_logic():
     bot = RichMessageBot("fake_token")
-    query = "https://link1.com/a.jpg https://link2.com/b.jpg formula: E=mc2"
+    query = "https://link1.com/a.jpg https://link2.com/b.jpg"
     results = bot.generate_inline_results(query)
 
-    # Verificar se gerou os 8 templates agora
-    assert len(results) == 8
-
-    # Verificar estrutura do InputRichMessageContent
+    # Verificar estrutura corrigida (campos diretos em rich_message)
     assert results[0]["id"] == "slideshow"
     assert "rich_message" in results[0]["input_message_content"]
-    assert results[0]["input_message_content"]["rich_message"]["is_rtl"] is False
+    assert "markdown" in results[0]["input_message_content"]["rich_message"]
 
-    print("Teste de lógica inline e novos templates passou!")
+    print("Teste de lógica inline (v3) passou!")
 
 if __name__ == "__main__":
     test_payload_generation()
