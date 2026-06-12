@@ -4,7 +4,7 @@ import sys
 import re
 import hashlib
 from config import BOT_TOKEN
-from rich_models import RichMessageBuilder, Heading, RichText, Photo, Slideshow, Collage, Table, TableCell, Bold, Math, Details
+from rich_models import RichMessageBuilder, Heading, RichText, Photo, Slideshow, Collage, Table, TableCell, Bold, Math, Details, Map
 from dialects import MARKDOWN_CATALOG
 
 class RichMessageBot:
@@ -105,6 +105,12 @@ class RichMessageBot:
         chat_id = callback_query["message"]["chat"]["id"]
         cq_id = callback_query["id"]
 
+        # Sempre responder a callback query IMEDIATAMENTE para parar o ícone de carregamento
+        try:
+            self.session.post(f"{self.base_url}/answerCallbackQuery", json={"callback_query_id": cq_id})
+        except Exception as e:
+            print(f"Erro ao responder callback query: {e}")
+
         if data.startswith("cat_"):
             target_cat_id = data[4:]
             selected_category = None
@@ -126,9 +132,6 @@ class RichMessageBot:
                     ])
 
                 builder.add(Table(rows))
-
-                # Responder o alerta e enviar a nova mensagem
-                self.session.post(f"{self.base_url}/answerCallbackQuery", json={"callback_query_id": cq_id})
                 self.send_rich_message(chat_id, markdown=builder.build_markdown())
 
     def handle_demo(self, chat_id):
@@ -323,6 +326,25 @@ class RichMessageBot:
                 }
             })
 
+            # 8. Template Mapa de Localização
+            b_map = RichMessageBuilder()
+            b_map.add(Heading(RichText("📍 Localização do Evento"), level=2))
+            b_map.add(Map(lat=-23.5505, long=-46.6333, zoom=15, caption="Centro de São Paulo"))
+
+            results.append({
+                "type": "article",
+                "id": "location_map",
+                "title": "Enviar Mapa Rich",
+                "description": "Mapa interativo com legenda",
+                "input_message_content": {
+                    "rich_message": {
+                        "markdown": b_map.build_markdown(),
+                        "is_rtl": False,
+                        "skip_entity_detection": False
+                    }
+                }
+            })
+
         return results
 
     def run(self):
@@ -337,6 +359,10 @@ class RichMessageBot:
                 if updates and updates.get("ok"):
                     for update in updates["result"]:
                         self.offset = update["update_id"] + 1
+
+                        # Debug: Mostrar o tipo de update recebido
+                        update_type = list(update.keys())[-1]
+                        print(f"Update recebido: {update_type} (ID: {update['update_id']})")
 
                         # Mensagens privadas
                         if "message" in update:

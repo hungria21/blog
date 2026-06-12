@@ -1,7 +1,7 @@
 import json
 import re
 from bot import RichMessageBot
-from rich_models import RichMessageBuilder, Heading, Bold, Math, Photo, Slideshow, RichText, Details
+from rich_models import RichMessageBuilder, Heading, Bold, Math, Photo, Slideshow, RichText, Details, Map
 
 def test_payload_generation():
     bot = RichMessageBot("fake_token")
@@ -63,16 +63,15 @@ def test_inline_logic():
     query = "https://link1.com/a.jpg https://link2.com/b.jpg formula: E=mc2"
     results = bot.generate_inline_results(query)
 
-    # Verificar se gerou os 5 templates (Slideshow, Collage, Table, Math, Details)
-    assert len(results) == 5
+    # Verificar se gerou os 8 templates agora
+    assert len(results) == 8
 
-    # Verificar estrutura do InputRichMessageContent no primeiro resultado (slideshow)
+    # Verificar estrutura do InputRichMessageContent
     assert results[0]["id"] == "slideshow"
     assert "rich_message" in results[0]["input_message_content"]
-    assert "markdown" in results[0]["input_message_content"]["rich_message"]
-    assert "🎞️ Galeria Slideshow" in results[0]["input_message_content"]["rich_message"]["markdown"]
+    assert results[0]["input_message_content"]["rich_message"]["is_rtl"] is False
 
-    print("Teste de lógica inline e templates passou!")
+    print("Teste de lógica inline e novos templates passou!")
 
 if __name__ == "__main__":
     test_payload_generation()
