@@ -44,7 +44,7 @@ class SendMessageLayer227Request(TLRequest):
         self.peer = peer
         self.rich_message = rich_message
         self.reply_to = reply_to
-        self.random_id = random_id or random.getrandbits(64) - (1 << 63)
+        self.random_id = random_id or random.getrandbits(64)
         self.reply_markup = reply_markup
 
     def _bytes(self):
@@ -58,7 +58,7 @@ class SendMessageLayer227Request(TLRequest):
         res.append(self.peer._bytes())
         if self.reply_to:
             res.append(self.reply_to._bytes())
-        res.append(struct.pack('<Q', self.random_id))
+        res.append(struct.pack('<q', struct.unpack('<q', struct.pack('<Q', self.random_id))[0]))
         res.append(self.serialize_bytes("")) # message is empty when rich_message is present
         if self.reply_markup:
             res.append(self.reply_markup._bytes())

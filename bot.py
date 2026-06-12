@@ -36,18 +36,18 @@ async def start_handler(event):
     welcome_text = formatter.format_welcome_message()
     catalog = formatter.get_syntax_catalog()
 
-    buttons = []
+    rows = []
     row = []
     # Mostrando apenas alguns no botão para não sobrecarregar, mas o catálogo completo está no código
     for i, (name, url) in enumerate(list(catalog.items())[:10]):
         row.append(types.KeyboardButtonUrl(name, url))
         if len(row) == 2:
-            buttons.append(row)
+            rows.append(types.KeyboardButtonRow(row))
             row = []
     if row:
-        buttons.append(row)
+        rows.append(types.KeyboardButtonRow(row))
 
-    await send_rich_message(event.input_chat, welcome_text, reply_markup=types.ReplyInlineMarkup(buttons))
+    await send_rich_message(event.input_chat, welcome_text, reply_markup=types.ReplyInlineMarkup(rows))
 
 @client.on(events.NewMessage(func=lambda e: not e.text.startswith('/')))
 async def message_handler(event):
