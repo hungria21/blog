@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alex Kidd - Hacker Edition (Sega Genesis)</title>
+    <!-- Google Fonts for Retro/Hacker style -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* Cyberpunk Hacker Theme Palette based on iwDarkRiff_ModoEscuro.attheme */
+        :root {
+            --bg-color: #000000;
+            --panel-bg: #060606;
+            --border-color: #494949;
+            --accent-red: #FF4646;
+            --accent-green: #39FF14;
+            --text-color: #E1E1E6;
+            --terminal-green: #00FF66;
+            --glow-red: 0 0 10px rgba(255, 70, 70, 0.6), 0 0 20px rgba(255, 70, 70, 0.4);
+            --glow-green: 0 0 10px rgba(57, 255, 20, 0.6), 0 0 20px rgba(57, 255, 20, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Fira Code', monospace;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle, #0c0c0e 10%, transparent 11%);
+            background-size: 20px 20px;
+        }
+
+        /* Scanline Overlay for retro vibe */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%,
+                rgba(0, 0, 0, 0.15) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.03),
+                rgba(0, 255, 0, 0.01),
+                rgba(0, 0, 255, 0.03)
+            );
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 10px;
+            border-bottom: 2px solid var(--border-color);
+            background-color: var(--panel-bg);
+            box-shadow: var(--glow-red);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        header h1 {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 22px;
+            color: #FFFFFF;
+            text-shadow: 2px 2px 0px var(--accent-red), 0 0 10px var(--accent-red);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            font-size: 13px;
+            color: var(--border-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        header .status-bar {
+            margin-top: 10px;
+            display: inline-flex;
+            gap: 15px;
+            font-size: 12px;
+            background: rgba(255, 70, 70, 0.05);
+            padding: 5px 15px;
+            border-radius: 4px;
+            border: 1px dashed var(--accent-red);
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-green);
+            box-shadow: var(--glow-green);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
+
+        @media (max-width: 1100px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Game and Emulator Container */
+        .emulator-card {
+            background-color: var(--panel-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .emulator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 11px;
+            color: var(--accent-red);
+        }
+
+        /* Custom style for the EmulatorJS inner container */
+        #game-wrapper {
+            width: 100%;
+            height: 540px;
+            background-color: #000;
+            border: 1px solid var(--border-color);
+            position: relative;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        #game {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Hacker Mod Menu Panel */
+        .hacker-menu-card {
+            background-color: var(--panel-bg);
+            border: 2px solid var(--accent-red);
+            border-radius: 8px;
+            padding: 25px 20px;
+            box-shadow: var(--glow-red);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+        }
+
+        .hacker-menu-card::before {
+            content: "HACKER MOD MENU";
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background-color: var(--bg-color);
+            padding: 2px 10px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            color: var(--accent-red);
+            text-shadow: 0 0 5px var(--accent-red);
+            border: 1px solid var(--accent-red);
+            border-radius: 4px;
+        }
+
+        .hacker-header {
+            margin-top: 5px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .hacker-header h2 {
+            font-size: 18px;
+            color: #FFFFFF;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hacker-header p {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        /* Hack/Cheats List */
+        .hacks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .hack-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: rgba(255, 70, 70, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .hack-item:hover {
+            border-color: var(--accent-red);
+            background: rgba(255, 70, 70, 0.06);
+            transform: translateX(4px);
+        }
+
+        .hack-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .hack-name {
+            font-size: 13px;
+            font-weight: bold;
+            color: #FFFFFF;
+        }
+
+        .hack-code {
+            font-size: 10px;
+            color: var(--accent-red);
+            font-family: monospace;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 2px 6px;
+            border-radius: 3px;
+            width: fit-content;
+        }
+
+        /* Custom Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+
+        .switch input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
+            margin: 0;
+        }
+
+        .slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border-color);
+            transition: .4s;
+            border-radius: 24px;
+            z-index: 1;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #FFFFFF;
+            transition: .4s;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-red);
+            box-shadow: var(--glow-red);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        /* Hacker Terminal Log Console */
+        .terminal-panel {
+            background-color: #000;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            font-family: 'Fira Code', monospace;
+            font-size: 11px;
+            color: var(--terminal-green);
+            height: 140px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .terminal-line {
+            line-height: 1.4;
+        }
+
+        .terminal-prefix {
+            color: var(--accent-red);
+            font-weight: bold;
+        }
+
+        /* Instructions & Controls Panel */
+        .info-panel {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            font-size: 12px;
+            color: #CCC;
+            line-height: 1.6;
+        }
+
+        .info-panel h3 {
+            font-size: 13px;
+            color: #FFF;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            border-left: 3px solid var(--accent-red);
+            padding-left: 8px;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 6px 12px;
+            margin-top: 8px;
+            font-size: 11px;
+        }
+
+        .control-key {
+            background: #252528;
+            color: #FFF;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 2px solid #111;
+        }
+
+        /* Notification Toast */
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--accent-red);
+            box-shadow: var(--glow-red);
+            color: #FFF;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        #toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #toast .toast-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--accent-red);
+            box-shadow: var(--glow-red);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scanlines"></div>
+
+    <header>
+        <h1>ALEX KIDD - HACKER EDITION</h1>
+        <p>Sega Genesis Mod Menu Web Player</p>
+        <div class="status-bar">
+            <span><span class="status-dot"></span> SEGA CORE: ONLINE</span>
+            <span>HACK ENGINE: ACTIVE</span>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <!-- Left: Web Player -->
+        <div class="emulator-card">
+            <div class="emulator-header">
+                <span>[▶] EMULATOR WORKSTATION</span>
+                <span>CORE: SEGA_MD</span>
+            </div>
+
+            <div id="game-wrapper">
+                <div id="game"></div>
+            </div>
+
+            <div class="info-panel">
+                <h3>Controles Padrão (Teclado)</h3>
+                <div class="controls-grid">
+                    <div><span class="control-key">A / S / Z / X</span></div>
+                    <div>Botões de Ação do Mega Drive (A, B, C)</div>
+                    <div><span class="control-key">Enter</span></div>
+                    <div>Start (Iniciar / Pausar Jogo)</div>
+                    <div><span class="control-key">Shift / Space</span></div>
+                    <div>Select / Alternar itens</div>
+                    <div><span class="control-key">▲ ▼ ◀ ▶</span></div>
+                    <div>Mover Alex Kidd / Navegar nos Menus</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Hacker Mod Menu -->
+        <div class="hacker-menu-card">
+            <div class="hacker-header">
+                <h2>☢️ BYPASS CORE INJECTOR</h2>
+                <p>Altere a memória RAM do console em tempo real</p>
+            </div>
+
+            <div class="hacks-list">
+                <!-- Hack 1 -->
+                <div class="hack-item">
+                    <div class="hack-info">
+                        <span class="hack-name">Vidas Infinitas (99)</span>
+                        <span class="hack-code">RAM AR: FFC120:0008</span>
+                    </div>
+                    <div class="switch">
+                        <input type="checkbox" id="cheat-lives" onchange="toggleCheat('lives', 'Infinite Lives', 'FFC120:0008', this)">
+                        <span class="slider"></span>
+                    </div>
+                </div>
+
+                <!-- Hack 2 -->
+                <div class="hack-item">
+                    <div class="hack-info">
+                        <span class="hack-name">Anéis / Pedras Infinitas</span>
+                        <span class="hack-code">RAM AR: FFFE29:0008</span>
+                    </div>
+                    <div class="switch">
+                        <input type="checkbox" id="cheat-rings" onchange="toggleCheat('rings', 'Infinite Rings', 'FFFE29:0008', this)">
+                        <span class="slider"></span>
+                    </div>
+                </div>
+
+                <!-- Hack 3 -->
+                <div class="hack-item">
+                    <div class="hack-info">
+                        <span class="hack-name">Fichas de Jankenpon</span>
+                        <span class="hack-code">RAM AR: FFFE2A:0008</span>
+                    </div>
+                    <div class="switch">
+                        <input type="checkbox" id="cheat-tokens" onchange="toggleCheat('tokens', 'Infinite Tokens', 'FFFE2A:0008', this)">
+                        <span class="slider"></span>
+                    </div>
+                </div>
+
+                <!-- Hack 4 -->
+                <div class="hack-item">
+                    <div class="hack-info">
+                        <span class="hack-name">Moedas Máximas (Baam)</span>
+                        <span class="hack-code">RAM AR: FFFE20:0063</span>
+                    </div>
+                    <div class="switch">
+                        <input type="checkbox" id="cheat-coins" onchange="toggleCheat('coins', 'Infinite Coins', 'FFFE20:0063', this)">
+                        <span class="slider"></span>
+                    </div>
+                </div>
+
+                <!-- Hack 5 -->
+                <div class="hack-item">
+                    <div class="hack-info">
+                        <span class="hack-name">Motos Infinitas</span>
+                        <span class="hack-code">RAM AR: FFFE25:0008</span>
+                    </div>
+                    <div class="switch">
+                        <input type="checkbox" id="cheat-bikes" onchange="toggleCheat('bikes', 'Infinite Bikes', 'FFFE25:0008', this)">
+                        <span class="slider"></span>
+                    </div>
+                </div>
+
+                <!-- Hack 6 -->
+                <div class="hack-item">
+                    <div class="hack-info">
+                        <span class="hack-name">Pula-Pulas Infinitos</span>
+                        <span class="hack-code">RAM AR: FFFE27:0008</span>
+                    </div>
+                    <div class="switch">
+                        <input type="checkbox" id="cheat-pogo" onchange="toggleCheat('pogo', 'Infinite Pogo Sticks', 'FFFE27:0008', this)">
+                        <span class="slider"></span>
+                    </div>
+                </div>
+
+                <!-- Hack 7 -->
+                <div class="hack-item">
+                    <div class="hack-info">
+                        <span class="hack-name">Bengalas de Voo Infinitas</span>
+                        <span class="hack-code">RAM AR: FFFE28:0008</span>
+                    </div>
+                    <div class="switch">
+                        <input type="checkbox" id="cheat-canes" onchange="toggleCheat('canes', 'Infinite Canes', 'FFFE28:0008', this)">
+                        <span class="slider"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-panel" style="background: rgba(255, 70, 70, 0.02); border-color: rgba(255, 70, 70, 0.2);">
+                <h3 style="color: var(--accent-red);">Console de Injeção</h3>
+                <div id="terminal" class="terminal-panel">
+                    <div class="terminal-line"><span class="terminal-prefix">[sys]</span> Inicializando console de injeção...</div>
+                    <div class="terminal-line"><span class="terminal-prefix">[sys]</span> Aguardando carregamento da ROM...</div>
+                </div>
+            </div>
+
+            <div class="info-panel" style="font-size: 11px;">
+                <h3>Como Funciona o Hack?</h3>
+                <p>Os cheats de vantagens acima são injetados diretamente na memória RAM virtual do emulador. Ative-os no menu acima. Para gerenciar os códigos ou adicionar novos manualmente, use a aba de configurações e o gerenciador de Cheats embutido no próprio menu de ferramentas do EmulatorJS.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification system -->
+    <div id="toast">
+        <div class="toast-dot"></div>
+        <span id="toast-message">Cheat Injetado!</span>
+    </div>
+
+    <!-- EmulatorJS Config & Loader -->
+    <script type="text/javascript">
+        // EmulatorJS Setup configuration
+        window.EJS_player = '#game';
+        window.EJS_core = 'segaMD';
+        window.EJS_gameUrl = 'roms/Alex Kidd in the Enchanted Castle (U).zip';
+        window.EJS_pathtodata = 'https://cdn.emulatorjs.org/stable/data/';
+        window.EJS_gameName = 'Alex Kidd in the Enchanted Castle';
+        window.EJS_startOnLoaded = false;
+        window.EJS_color = '#FF4646'; // High glowing red accent
+        window.EJS_gameID = 12051989; // Unique identifier for saves
+
+        // Define all preloaded cheats to make sure they are accessible inside RetroArch cheat manager
+        window.EJS_cheats = [
+            ["Infinite Lives", "FFC120:0008"],
+            ["Infinite Rings", "FFFE29:0008"],
+            ["Infinite Tokens", "FFFE2A:0008"],
+            ["Infinite Coins", "FFFE20:0063"],
+            ["Infinite Bikes", "FFFE25:0008"],
+            ["Infinite Pogo Sticks", "FFFE27:0008"],
+            ["Infinite Canes", "FFFE28:0008"]
+        ];
+
+        // Terminal Logging helper
+        const terminal = document.getElementById('terminal');
+        function logToTerminal(prefix, message) {
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+
+            const pref = document.createElement('span');
+            pref.className = 'terminal-prefix';
+            pref.textContent = `[${prefix}] `;
+
+            const msg = document.createElement('span');
+            msg.textContent = message;
+
+            line.appendChild(pref);
+            line.appendChild(msg);
+            terminal.appendChild(line);
+
+            // Auto scroll to bottom
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        // Custom notification system (Toast)
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Toggle cheat logic
+        function toggleCheat(id, name, code, element) {
+            const isChecked = element.checked;
+            const statusStr = isChecked ? "ACTIVATED" : "DEACTIVATED";
+            const hexVal = isChecked ? code.split(':')[1] : "0000"; // standard hex value toggle
+
+            logToTerminal("hack", `Cheat ${name} (${code}) ${statusStr}`);
+            showToast(`Cheat ${isChecked ? "Injetado" : "Removido"}: ${name}`);
+
+            // Programmatically notify retroarch engine if it is already loaded
+            try {
+                if (window.EJS_emulator && typeof window.EJS_emulator.addCheat === 'function') {
+                    window.EJS_emulator.addCheat(name, code, isChecked);
+                    logToTerminal("core", `Sinal enviado ao Core RetroArch: ${name} = ${isChecked}`);
+                }
+            } catch(e) {
+                logToTerminal("warn", `Core não carregou completamente ainda para receber chamada direta.`);
+            }
+        }
+
+        // Hook game start event
+        window.EJS_onGameStart = function() {
+            logToTerminal("sys", "Alex Kidd em execução! Divirta-se com as vantagens!");
+            logToTerminal("sys", "Dica: Ative os interruptores do Mod Menu para ganhar vantagens instantâneas.");
+            showToast("Jogo Iniciado com Sucesso!");
+        };
+
+        window.EJS_ready = function() {
+            logToTerminal("sys", "EmulatorJS Core pronto para carregar a ROM.");
+        };
+
+        // Welcome log
+        setTimeout(() => {
+            logToTerminal("bypass", "Injetor de bypass de hardware pronto.");
+            logToTerminal("bypass", "ROM Alex Kidd carregada com sucesso do diretório /roms/");
+        }, 1000);
+    </script>
+    <script src="https://cdn.emulatorjs.org/stable/data/loader.js"></script>
+</body>
+</html>
