@@ -39,7 +39,7 @@ LINK_USERNAME_REGEX = re.compile(
 
 DB_FILE = "usernames_database.txt"
 PAGE_LIMIT = 100     # mensagens por página
-MAX_PAGES = 200        # limite de segurança (evita loop infinito em chats gigantes)
+MAX_PAGES = 2000        # limite de segurança (evita loop infinito em chats gigantes)
 
 COMMAND_REGEX = re.compile(r'\.bot\s+(@?\S+)\s*\+?\s*(.+)', re.IGNORECASE)
 
